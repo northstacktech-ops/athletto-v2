@@ -350,8 +350,9 @@ async function salvarComo(estadoInicial: 'inativo' | 'ativo') {
     })
     if (error || !planej) throw error ?? new Error('Falha ao criar')
 
-    const atletasNaoIsentos = atletasRevisao.value.filter((a) => !a.isento)
-    const atletaIds = atletasNaoIsentos.map((a) => a.atleta_id)
+    // Vincula TODOS os atletas (inclusive isentos). A RPC ativar_planejamento
+    // pula isento=true ao gerar cobranças, então registrar o isento é correto.
+    const atletaIds = atletasRevisao.value.map((a) => a.atleta_id)
     const customizacoes = atletasRevisao.value.map((a) => ({
       atleta_id: a.atleta_id,
       valor_customizado: a.valorCustom !== (a.valorAtleta ?? a.valorTurma) ? a.valorCustom : null,
@@ -365,9 +366,10 @@ async function salvarComo(estadoInicial: 'inativo' | 'ativo') {
     if (estadoInicial === 'ativo') {
       await fin.ativarPlanejamento(planej.id)
       const isentos = atletasRevisao.value.filter((a) => a.isento).length
+      const cobrados = atletaIds.length - isentos
       toast.success(
         'Cobranças ativadas!',
-        `${atletaIds.length} atleta(s) vinculado(s)${isentos ? ` · ${isentos} isento(s)` : ''}`,
+        `${cobrados} atleta(s) com cobrança${isentos ? ` · ${isentos} isento(s)` : ''}`,
       )
     } else {
       toast.success('Planejamento salvo como rascunho')

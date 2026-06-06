@@ -110,6 +110,7 @@ function turmaParaEvento(turma: any, data: string): EventoCalendario {
     data_inicio: `${data}T${turma.horario_inicio}`,
     data_fim: `${data}T${turma.horario_fim}`,
     turma_id: turma.id,
+    turma_ids: [turma.id],
     criado_por: null,
     criado_em: '',
   }

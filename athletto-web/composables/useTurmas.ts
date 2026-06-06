@@ -17,7 +17,11 @@ export function useTurmas() {
     if (!incluir_inativas) query = query.eq('ativo', true)
 
     const { data, error } = await query.order('nome')
-    return { data: data as (Turma & { total_atletas: number })[] | null, error }
+    const mapeado = (data ?? []).map((t: any) => ({
+      ...t,
+      total_atletas: Number(t.atleta_turma?.[0]?.count ?? 0),
+    }))
+    return { data: mapeado as (Turma & { total_atletas: number })[], error }
   }
 
   async function buscarPorId(id: string) {

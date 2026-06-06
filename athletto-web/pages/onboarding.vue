@@ -319,15 +319,6 @@
 
     </div>
 
-    <!-- Pular -->
-    <button
-      v-if="step < STEPS.length - 1"
-      class="relative mt-6 text-white/50 hover:text-white/80 text-sm transition-colors"
-      @click="skipOnboarding"
-    >
-      Pular configuração por agora
-    </button>
-
     <!-- Toasts -->
     <UiToastContainer />
   </div>
@@ -365,12 +356,28 @@ const errors = reactive({
   cep: '',
 })
 
-// ── Pré-preencher nome do cadastro ───────────────────────────────────────────
-onMounted(() => {
+// ── Guarda: quem já tem clube não passa pelo onboarding ──────────────────────
+onMounted(async () => {
+  const supabase = useSupabaseClient()
+  const user = useSupabaseUser()
+
+  // Se já existe gestor (logo, clube) para este usuário, vai direto ao painel.
+  if (user.value) {
+    const { data: g } = await supabase
+      .from('gestores')
+      .select('id')
+      .eq('id', user.value.id)
+      .maybeSingle()
+    if (g) {
+      localStorage.setItem('athletto_onboarding_done', '1')
+      window.location.href = '/'
+      return
+    }
+  }
+
+  // Pré-preenche o nome do clube vindo do cadastro
   const saved = localStorage.getItem('athletto_onboarding_nome_clube')
   if (saved) form.nomeClube = saved
-
-  const user = useSupabaseUser()
   if (user.value?.user_metadata?.nome_clube) {
     form.nomeClube = user.value.user_metadata.nome_clube
   }
@@ -489,13 +496,6 @@ function gerarSlug(nome: string): string {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '')
     .slice(0, 50)
-}
-
-function skipOnboarding() {
-  if (process.client) {
-    localStorage.setItem('athletto_onboarding_done', '1')
-    window.location.href = '/'
-  }
 }
 
 async function finishOnboarding() {

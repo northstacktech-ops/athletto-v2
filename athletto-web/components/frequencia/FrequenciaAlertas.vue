@@ -113,7 +113,8 @@ function linkWhatsApp(al: AlertaEvasao) {
 
 async function dispensar(id: string) {
   try {
-    await freqComp.dispensarAlerta(id)
+    const { error } = await freqComp.dispensarAlerta(id)
+    if (error) throw error
     toast.success('Alerta dispensado', 'O atleta não aparecerá mais nos alertas ativos.')
     emit('atualizado')
     await carregar()

@@ -179,7 +179,8 @@ function linkWhatsApp(cb: Cobranca) {
 async function marcarPago(id: string) {
   if (!window.confirm('Confirmar baixa manual desta cobrança?')) return
   try {
-    await fin.marcarComoPago(id)
+    const { error } = await fin.marcarComoPago(id)
+    if (error) throw error
     toast.success('Cobrança marcada como paga')
     emit('atualizado')
     await carregar()
@@ -204,7 +205,8 @@ async function marcarPagasEmMassa() {
   if (!window.confirm(`Marcar ${selecionadas.size} cobrança(s) como pagas?`)) return
   try {
     for (const id of selecionadas) {
-      await fin.marcarComoPago(id)
+      const { error } = await fin.marcarComoPago(id)
+      if (error) throw error
     }
     toast.success(`${selecionadas.size} cobrança(s) marcadas como pagas`)
     selecionadas.clear()

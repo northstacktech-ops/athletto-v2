@@ -110,7 +110,9 @@ export function useFinanceiro() {
       const custom = customizacoes?.find((c) => c.atleta_id === atleta_id)
       return { planejamento_id, atleta_id, valor_customizado: custom?.valor_customizado ?? null, isento: custom?.isento ?? false }
     })
-    const { error } = await supabase.from('planejamento_atletas').upsert(rows)
+    const { error } = await supabase
+      .from('planejamento_atletas')
+      .upsert(rows, { onConflict: 'planejamento_id,atleta_id' })
     return { error }
   }
 
@@ -145,10 +147,23 @@ export function useFinanceiro() {
         .eq('clube_id', getClubId())
     }
 
+    // `id` é o id da CAIXINHA. Buscamos o planejamento vinculado para encerrá-lo.
+    const { data: caixinha, error: caixinhaErr } = await supabase
+      .from('caixinhas')
+      .select('planejamento_id')
+      .eq('id', id)
+      .eq('clube_id', getClubId())
+      .single()
+
+    if (caixinhaErr) return { error: caixinhaErr }
+    const planejamentoId = (caixinha as any)?.planejamento_id
+    if (!planejamentoId) return { error: null }
+
     const { error } = await supabase
       .from('planejamentos')
       .update({ status: 'encerrado', encerrado_em: new Date().toISOString() })
-      .eq('id', id)
+      .eq('id', planejamentoId)
+      .eq('clube_id', getClubId())
 
     return { error }
   }

@@ -16,7 +16,11 @@ export function useAdminClubes() {
       query = query.or(`nome.ilike.%${filtros.busca}%,slug.ilike.%${filtros.busca}%`)
     }
     const { data, error } = await query.order('criado_em', { ascending: false })
-    return { data, error }
+    const normalizado = (data ?? []).map((c: any) => ({
+      ...c,
+      assinatura: Array.isArray(c.assinatura) ? c.assinatura[0] ?? null : c.assinatura ?? null,
+    }))
+    return { data: normalizado, error }
   }
 
   async function buscarPorId(id: string) {

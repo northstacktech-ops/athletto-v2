@@ -9,6 +9,8 @@ export function useTrial() {
   const trialFim = useState<string | null>('trial_fim', () => null)
   const assinaturaStatus = useState<string | null>('assinatura_status', () => null)
   const trialCarregado = useState('trial_carregado', () => false)
+  // Guarda o último clube carregado para invalidar o cache ao trocar de usuário/clube.
+  const trialClubeId = useState<string | null>('trial_clube_id', () => null)
 
   const isTrial = computed(() => assinaturaStatus.value === 'trial')
 
@@ -30,9 +32,11 @@ export function useTrial() {
   )
 
   async function carregarAssinatura() {
-    if (trialCarregado.value) return
     const clubeId = gestor.value?.clube_id
     if (!clubeId) return
+
+    // Recarrega se ainda não carregou OU se o clube mudou (troca de usuário).
+    if (trialCarregado.value && trialClubeId.value === clubeId) return
 
     const supabase = useSupabaseClient()
     const { data } = await supabase
@@ -45,6 +49,7 @@ export function useTrial() {
       assinaturaStatus.value = data.status
       trialFim.value = data.trial_fim ?? null
       trialCarregado.value = true
+      trialClubeId.value = clubeId
     }
   }
 

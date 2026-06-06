@@ -182,15 +182,29 @@ async function handleLogin() {
   errorMsg.value = ''
 
   try {
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email: form.email,
       password: form.senha,
     })
     if (error) throw error
 
     success('Bem-vindo!', 'Login realizado com sucesso.')
-    const isFirstAccess = !localStorage.getItem('athletto_onboarding_done')
-    await navigateTo(isFirstAccess ? '/onboarding' : '/')
+
+    // O destino é decidido pelo BANCO, não por localStorage: se o usuário já
+    // tem gestor (logo, clube), vai direto pro painel; só cai no onboarding
+    // quem ainda não criou o clube. Isso evita o onboarding reaparecer em
+    // outro navegador / com cache limpo.
+    let destino = '/'
+    const uid = data.user?.id
+    if (uid) {
+      const { data: g } = await supabase
+        .from('gestores')
+        .select('id')
+        .eq('id', uid)
+        .maybeSingle()
+      destino = g ? '/' : '/onboarding'
+    }
+    await navigateTo(destino)
   } catch (err: any) {
     const msg: string = String(err?.message ?? err?.cause ?? '')
     const networkFail =

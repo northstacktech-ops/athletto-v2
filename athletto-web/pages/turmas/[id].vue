@@ -430,10 +430,10 @@ async function carregar() {
     const tRes = await turmasComp.buscarPorId(turmaId.value)
     turma.value = tRes.data
     if (turma.value) {
-      useHead({ title: `${turma.value.nome} — Atletto` })
+      useHead({ title: `${turma.value.nome} — Athletto` })
 
       const atRes = await freqComp.atletasDaTurma(turma.value.id)
-      atletasDaTurma.value = (atRes.data ?? []) as Atleta[]
+      atletasDaTurma.value = (atRes.data ?? []).map((x: any) => x.atletas ? x.atletas : x) as Atleta[]
 
       const fRes = await freqComp.historicoPorTurma(turma.value.id)
       freqs.value = (fRes.data ?? []) as Frequencia[]
