@@ -248,7 +248,7 @@ async function salvar() {
   loading.value = true
   try {
     if (editando.value && props.atleta) {
-      await atletasComp.atualizar(props.atleta.id, {
+      const { error: updErr } = await atletasComp.atualizar(props.atleta.id, {
         nome: form.nome.trim(),
         apelido: form.apelido || null,
         cpf: form.cpf,
@@ -263,10 +263,11 @@ async function salvar() {
         observacoes_medicas: form.observacoes_medicas || null,
         valor_mensalidade: mensalidadeCustom.value ? (form.valor_mensalidade ?? 0) : null,
       })
+      if (updErr) throw updErr
       await sincronizarTurmas(props.atleta.id)
       toast.success('Atleta atualizado')
     } else {
-      const { data } = await atletasComp.criar({
+      const { data, error } = await atletasComp.criar({
         clube_id: clube.value.id,
         nome: form.nome.trim(),
         apelido: form.apelido || null,
@@ -288,7 +289,8 @@ async function salvar() {
         app_primeiro_acesso: true,
         valor_mensalidade: mensalidadeCustom.value ? (form.valor_mensalidade ?? 0) : null,
       })
-      if (data) await sincronizarTurmas(data.id)
+      if (error || !data) throw error ?? new Error('Não foi possível cadastrar o atleta')
+      await sincronizarTurmas(data.id)
       toast.success('Atleta cadastrado')
     }
     emit('salvo')
@@ -300,16 +302,23 @@ async function salvar() {
 }
 
 async function sincronizarTurmas(atletaId: string) {
-  // Mock: aplica diferenças (adicionar/remover)
+  // Aplica as diferenças (adicionar/remover) e PROPAGA qualquer erro, para que
+  // o usuário veja a falha em vez de um "sucesso" falso.
   const { data: atuais } = await atletasComp.listarTurmas(atletaId)
   const atuaisIds = new Set((atuais ?? []).map((d: any) => d.turma_id))
   const desejados = new Set(form.turmasIds)
 
   for (const id of form.turmasIds) {
-    if (!atuaisIds.has(id)) await atletasComp.vincularTurma(atletaId, id)
+    if (!atuaisIds.has(id)) {
+      const { error } = await atletasComp.vincularTurma(atletaId, id)
+      if (error) throw error
+    }
   }
   for (const id of atuaisIds) {
-    if (!desejados.has(id)) await atletasComp.desvincularTurma(atletaId, id)
+    if (!desejados.has(id)) {
+      const { error } = await atletasComp.desvincularTurma(atletaId, id)
+      if (error) throw error
+    }
   }
 }
 

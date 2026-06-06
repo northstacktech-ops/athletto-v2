@@ -116,9 +116,17 @@ async function salvar() {
     const para_adicionar = [...vinculados.value].filter((id) => !vinculadosOriginais.value.has(id))
     const para_remover = [...vinculadosOriginais.value].filter((id) => !vinculados.value.has(id))
 
-    for (const id of para_adicionar) await atletasComp.vincularTurma(id, props.turma.id)
-    for (const id of para_remover) await atletasComp.desvincularTurma(id, props.turma.id)
+    for (const id of para_adicionar) {
+      const { error } = await atletasComp.vincularTurma(id, props.turma.id)
+      if (error) throw error
+    }
+    for (const id of para_remover) {
+      const { error } = await atletasComp.desvincularTurma(id, props.turma.id)
+      if (error) throw error
+    }
 
+    // Atualiza o baseline para refletir o estado salvo (permite salvar de novo)
+    vinculadosOriginais.value = new Set(vinculados.value)
     toast.success('Vínculos atualizados', `+${para_adicionar.length} / −${para_remover.length}`)
     emit('atualizado')
   } catch (err: any) {

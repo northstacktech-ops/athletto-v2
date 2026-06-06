@@ -114,9 +114,12 @@ export function useAtletas() {
   }
 
   async function vincularTurma(atleta_id: string, turma_id: string) {
+    // onConflict explícito na PK composta: se já existir um vínculo (mesmo
+    // inativo, de um desvincular anterior), ele é reativado em vez de gerar
+    // erro de chave duplicada.
     const { error } = await supabase
       .from('atleta_turma')
-      .upsert({ atleta_id, turma_id, ativo: true })
+      .upsert({ atleta_id, turma_id, ativo: true }, { onConflict: 'atleta_id,turma_id' })
 
     return { error }
   }
