@@ -48,6 +48,9 @@
         <button class="px-3 py-2 rounded-lg text-sm font-semibold border border-slate-200 dark:border-white/[0.10] text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/[0.05]" @click="abrirEdicao = true">
           Editar turma
         </button>
+        <button class="px-3 py-2 rounded-lg text-sm font-semibold bg-brand-600 hover:bg-brand-700 text-white transition-colors" @click="abrirVincular = true">
+          Vincular atletas
+        </button>
         <NuxtLink :to="`/frequencia?turma=${turma.id}`" class="px-3 py-2 rounded-lg text-sm font-semibold bg-emerald-500 hover:bg-emerald-600 text-white transition-colors">
           Registrar frequência
         </NuxtLink>
@@ -124,8 +127,20 @@
 
         <!-- ATLETAS -->
         <div v-else-if="aba === 'atletas'">
+          <div class="flex items-center justify-between mb-3">
+            <p class="text-xs font-bold uppercase tracking-wider text-slate-400">
+              {{ atletasDaTurma.length }} atleta(s) vinculado(s)
+            </p>
+            <button class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-brand-600 hover:bg-brand-700 text-white transition-colors inline-flex items-center gap-1.5" @click="abrirVincular = true">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Vincular atletas
+            </button>
+          </div>
           <div v-if="atletasDaTurma.length === 0" class="text-center py-12">
             <p class="text-sm text-slate-400">Nenhum atleta vinculado.</p>
+            <button class="mt-3 px-4 py-2 rounded-lg text-sm font-semibold bg-brand-600 hover:bg-brand-700 text-white transition-colors" @click="abrirVincular = true">
+              Vincular o primeiro atleta
+            </button>
           </div>
           <ul v-else class="divide-y divide-slate-100 dark:divide-white/[0.06]">
             <li v-for="a in atletasDaTurma" :key="a.id" class="py-3 flex items-center gap-3">
@@ -330,6 +345,12 @@
       @close="abrirEdicao = false"
       @salvo="onSalvo"
     />
+    <TurmasAtletasDrawer
+      v-if="abrirVincular && turma"
+      :turma="turma"
+      @close="abrirVincular = false"
+      @atualizado="onVinculado"
+    />
   </div>
 </template>
 
@@ -386,6 +407,7 @@ const turma = ref<(Turma & { total_atletas?: number }) | null>(null)
 const atletasDaTurma = ref<Atleta[]>([])
 const freqs = ref<Frequencia[]>([])
 const abrirEdicao = ref(false)
+const abrirVincular = ref(false)
 
 const tabs = [
   { value: 'visao' as const, label: 'Visão geral' },
@@ -500,6 +522,11 @@ async function desativar() {
 
 async function onSalvo() {
   abrirEdicao.value = false
+  await carregar()
+}
+
+async function onVinculado() {
+  abrirVincular.value = false
   await carregar()
 }
 </script>
