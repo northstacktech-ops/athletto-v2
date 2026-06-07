@@ -41,6 +41,7 @@ class _PrimeiroAcessoScreenState extends State<PrimeiroAcessoScreen> {
   final _senhaController = TextEditingController();
   final _confirmarController = TextEditingController();
   bool _loading = false;
+  bool _aceitoTermos = false;
   String? _erro;
 
   @override
@@ -63,6 +64,11 @@ class _PrimeiroAcessoScreenState extends State<PrimeiroAcessoScreen> {
   Future<void> _confirmar() async {
     setState(() => _erro = null);
     if (!_formKey.currentState!.validate()) return;
+    if (!_aceitoTermos) {
+      setState(() => _erro =
+          'Você precisa aceitar os Termos de Uso e a Política de Privacidade.');
+      return;
+    }
 
     setState(() => _loading = true);
     try {
@@ -89,6 +95,10 @@ class _PrimeiroAcessoScreenState extends State<PrimeiroAcessoScreen> {
         );
         await SessionStore.instance.salvarSessao(sessao);
         await SessionStore.instance.salvarCpf(widget.cpf);
+        // Registra o consentimento (LGPD) — best-effort, não bloqueia o acesso.
+        try {
+          await Api.instance.registrarConsentimento(result.token);
+        } catch (_) {/* ignora falha de registro de consentimento */}
         if (!mounted) return;
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (_) => HomeShell(sessao: sessao)),
@@ -195,6 +205,32 @@ class _PrimeiroAcessoScreenState extends State<PrimeiroAcessoScreen> {
                 }
                 return null;
               },
+            ),
+            const SizedBox(height: 16),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: Checkbox(
+                    value: _aceitoTermos,
+                    onChanged: (v) =>
+                        setState(() => _aceitoTermos = v ?? false),
+                    activeColor: AppColors.lime,
+                    checkColor: AppColors.ink,
+                    side: const BorderSide(color: AppColors.border),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Li e aceito os Termos de Uso e a Política de Privacidade.',
+                    style: AppText.custom(
+                        size: 13, color: AppColors.white, height: 1.4),
+                  ),
+                ),
+              ],
             ),
             if (_erro != null) ...[
               const SizedBox(height: 16),

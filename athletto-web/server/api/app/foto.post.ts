@@ -1,5 +1,6 @@
 import { defineEventHandler, readMultipartFormData, createError, getMethod } from 'h3'
 import { getServiceClient, aplicarCorsApp, validarSessao } from '~~/server/utils/appAtleta'
+import { logEvento, erroParaLog } from '~~/server/utils/logger'
 
 /**
  * POST /api/app/foto  (auth, multipart)
@@ -43,7 +44,7 @@ export default defineEventHandler(async (event) => {
     .from('avatares')
     .upload(path, arquivo.data, { upsert: true, contentType })
   if (upErr) {
-    console.error('[app/foto] erro upload:', upErr)
+    logEvento('error', 'app.foto.upload_erro', { atleta_id: sessao.atleta_id, clube_id: sessao.clube_id, erro: erroParaLog(upErr) })
     throw createError({ statusCode: 500, statusMessage: 'Falha ao enviar a imagem.' })
   }
 
@@ -55,7 +56,7 @@ export default defineEventHandler(async (event) => {
     .update({ foto_url: url })
     .eq('id', sessao.atleta_id)
   if (updErr) {
-    console.error('[app/foto] erro update foto_url:', updErr)
+    logEvento('error', 'app.foto.update_erro', { atleta_id: sessao.atleta_id, erro: erroParaLog(updErr) })
     throw createError({ statusCode: 500, statusMessage: 'Falha ao salvar a foto.' })
   }
 

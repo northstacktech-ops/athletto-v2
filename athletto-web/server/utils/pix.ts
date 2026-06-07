@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { AbacateCreatePixRequest, AbacatePixPayment } from '~/types/abacatepay'
+import { logEvento, erroParaLog } from '~~/server/utils/logger'
 
 export interface CriarPixResult {
   ok: boolean
@@ -109,7 +110,7 @@ export async function criarPixParaCobranca(
       expires_at: pix.expires_at,
     }
   } catch (err: any) {
-    console.error('[abacatepay create pix] erro:', err)
+    logEvento('error', 'pix.criar.gateway_erro', { cobranca_id: cobrancaId, erro: erroParaLog(err) })
     return { ok: false, status: 502, erro: 'Falha no gateway AbacatePay' }
   }
 }

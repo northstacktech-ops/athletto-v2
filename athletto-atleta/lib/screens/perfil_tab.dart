@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -347,6 +348,141 @@ class _PerfilTabState extends State<PerfilTab> {
   }
 
   // --------------------------------------------------------------------------
+  // LGPD: exportar dados / excluir conta
+  // --------------------------------------------------------------------------
+  Future<void> _exportarDados(BuildContext context) async {
+    final sessao = SessaoProvider.of(context);
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+    try {
+      final dados = await Api.instance.exportarDados(sessao.token);
+      if (!context.mounted) return;
+      Navigator.of(context).pop(); // fecha o loading
+      final texto = const JsonEncoder.withIndent('  ').convert(dados);
+      await showDialog<void>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Meus dados'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: SingleChildScrollView(
+              child: SelectableText(
+                texto,
+                style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('Fechar')),
+          ],
+        ),
+      );
+    } on ApiException catch (e) {
+      if (!context.mounted) return;
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.mensagem)));
+    } catch (_) {
+      if (!context.mounted) return;
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Não foi possível exportar seus dados.')),
+      );
+    }
+  }
+
+  Future<void> _excluirConta(BuildContext context) async {
+    // 1ª confirmação — aviso de irreversibilidade.
+    final passo1 = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Excluir minha conta'),
+        content: const Text(
+          'Esta ação é irreversível. Seus dados pessoais serão anonimizados e '
+          'você perderá o acesso ao app. Deseja continuar?',
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('Cancelar')),
+          TextButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: const Text('Continuar',
+                  style: TextStyle(color: AppColors.danger))),
+        ],
+      ),
+    );
+    if (passo1 != true || !context.mounted) return;
+
+    // 2ª confirmação — exige digitar EXCLUIR.
+    final controller = TextEditingController();
+    final passo2 = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setLocal) {
+          final habilitado =
+              controller.text.trim().toUpperCase() == 'EXCLUIR';
+          return AlertDialog(
+            title: const Text('Confirme a exclusão'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Para confirmar, digite EXCLUIR abaixo.'),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: controller,
+                  autofocus: true,
+                  textCapitalization: TextCapitalization.characters,
+                  decoration: const InputDecoration(hintText: 'EXCLUIR'),
+                  onChanged: (_) => setLocal(() {}),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(false),
+                  child: const Text('Cancelar')),
+              TextButton(
+                  onPressed:
+                      habilitado ? () => Navigator.of(ctx).pop(true) : null,
+                  child: const Text('Excluir',
+                      style: TextStyle(color: AppColors.danger))),
+            ],
+          );
+        },
+      ),
+    );
+    controller.dispose();
+    if (passo2 != true || !context.mounted) return;
+
+    final sessao = SessaoProvider.of(context);
+    try {
+      await Api.instance.excluirConta(sessao.token);
+      await SessionStore.instance.removerSessao(sessao.clubeId);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Conta excluída. Até logo.')),
+      );
+      widget.onSair();
+    } on ApiException catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.mensagem)));
+    } catch (_) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Não foi possível excluir a conta.')),
+      );
+    }
+  }
+
+  // --------------------------------------------------------------------------
   // UI
   // --------------------------------------------------------------------------
   @override
@@ -617,6 +753,17 @@ class _PerfilTabState extends State<PerfilTab> {
             icon: Icons.help,
             label: 'Ajuda e suporte',
             onTap: () => _abrirUrl(context, '/suporte'),
+          ),
+          _ActionRow(
+            icon: Icons.download_rounded,
+            label: 'Exportar meus dados',
+            onTap: () => _exportarDados(context),
+          ),
+          _ActionRow(
+            icon: Icons.delete_forever,
+            label: 'Excluir minha conta',
+            danger: true,
+            onTap: () => _excluirConta(context),
           ),
           _ActionRow(
             icon: Icons.logout,

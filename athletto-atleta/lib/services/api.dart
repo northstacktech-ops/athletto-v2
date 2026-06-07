@@ -429,4 +429,61 @@ class Api {
     }
     _throwFromBody(res);
   }
+
+  // ---------------------------------------------------------------------------
+  // LGPD — dados pessoais
+  // ---------------------------------------------------------------------------
+
+  /// GET /exportar-dados → JSON com todos os dados pessoais (direito de acesso).
+  Future<Map<String, dynamic>> exportarDados(String token) async {
+    final res = await _get('/exportar-dados', token: token);
+    final data = _decode(res);
+    if (res.statusCode >= 200 && res.statusCode < 300 && data is Map) {
+      return data.cast<String, dynamic>();
+    }
+    if (res.statusCode == 401) {
+      throw ApiException('Sessão expirada. Faça login novamente.',
+          statusCode: 401);
+    }
+    _throwFromBody(res);
+  }
+
+  /// POST /excluir-conta → anonimiza a conta (direito ao esquecimento).
+  /// IRREVERSÍVEL. Envia a confirmação exigida pelo servidor.
+  Future<void> excluirConta(String token) async {
+    final res =
+        await _post('/excluir-conta', {'confirmacao': 'EXCLUIR'}, token: token);
+    final data = _decode(res);
+    if (res.statusCode >= 200 &&
+        res.statusCode < 300 &&
+        (data == null || (data is Map && data['ok'] != false))) {
+      return;
+    }
+    _throwFromBody(res);
+  }
+
+  /// POST /consentimento → registra o aceite dos documentos legais.
+  Future<void> registrarConsentimento(
+    String token, {
+    bool termosUso = true,
+    bool politicaPrivacidade = true,
+    bool marketing = false,
+  }) async {
+    final res = await _post(
+      '/consentimento',
+      {
+        'termos_uso': termosUso,
+        'politica_privacidade': politicaPrivacidade,
+        'marketing': marketing,
+      },
+      token: token,
+    );
+    final data = _decode(res);
+    if (res.statusCode >= 200 &&
+        res.statusCode < 300 &&
+        (data == null || (data is Map && data['ok'] != false))) {
+      return;
+    }
+    _throwFromBody(res);
+  }
 }

@@ -1,4 +1,4 @@
-import { defineEventHandler, readBody, createError, getMethod } from 'h3'
+import { defineEventHandler, createError, getMethod } from 'h3'
 import {
   getServiceClient,
   aplicarCorsApp,
@@ -6,6 +6,9 @@ import {
   gerarToken,
   hashToken,
 } from '~~/server/utils/appAtleta'
+import { lerBodyValidado } from '~~/server/utils/validacao'
+import { logEvento, erroParaLog } from '~~/server/utils/logger'
+import { z } from 'zod'
 
 /**
  * POST /api/app/login
@@ -17,6 +20,19 @@ import {
  */
 const SESSAO_DIAS = 90
 
+const loginSchema = z.object({
+  cpf: z
+    .string({ required_error: 'CPF ausente.' })
+    .transform((s) => s.replace(/\D/g, ''))
+    .refine((s) => s.length === 11, 'CPF inválido.'),
+  clube_id: z.string({ required_error: 'clube_id ausente.' }).trim().min(1, 'clube_id ausente.'),
+  senha: z.string({ required_error: 'Senha ausente.' }).min(1, 'Senha ausente.'),
+  device: z
+    .string()
+    .optional()
+    .transform((v) => (v ? v.slice(0, 200) : null)),
+})
+
 export default defineEventHandler(async (event) => {
   aplicarCorsApp(event)
   if (getMethod(event) === 'OPTIONS') return ''
@@ -25,27 +41,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 429, statusMessage: 'Muitas tentativas. Aguarde um minuto.' })
   }
 
-  const body = await readBody<{
-    cpf?: string
-    clube_id?: string
-    senha?: string
-    device?: string
-  }>(event)
-
-  const cpf = String(body?.cpf ?? '').replace(/\D/g, '')
-  const clubeId = String(body?.clube_id ?? '').trim()
-  const senha = String(body?.senha ?? '')
-  const device = body?.device ? String(body.device).slice(0, 200) : null
-
-  if (cpf.length !== 11) {
-    throw createError({ statusCode: 400, statusMessage: 'CPF inválido.' })
-  }
-  if (!clubeId) {
-    throw createError({ statusCode: 400, statusMessage: 'clube_id ausente.' })
-  }
-  if (!senha) {
-    throw createError({ statusCode: 400, statusMessage: 'Senha ausente.' })
-  }
+  const { cpf, clube_id: clubeId, senha, device } = await lerBodyValidado(event, loginSchema)
 
   const supabase = getServiceClient(event)
 
@@ -55,7 +51,7 @@ export default defineEventHandler(async (event) => {
     p_senha: senha,
   })
   if (error) {
-    console.error('[app/login] erro rpc:', error)
+    logEvento('error', 'app.login.rpc_erro', { clube_id: clubeId, erro: erroParaLog(error) })
     throw createError({ statusCode: 500, statusMessage: 'Falha ao autenticar.' })
   }
 
@@ -84,9 +80,15 @@ export default defineEventHandler(async (event) => {
     revogado: false,
   })
   if (sessErr) {
-    console.error('[app/login] erro ao criar sessão:', sessErr)
+    logEvento('error', 'app.login.sessao_erro', {
+      atleta_id: atletaId,
+      clube_id: clubeIdOk,
+      erro: erroParaLog(sessErr),
+    })
     throw createError({ statusCode: 500, statusMessage: 'Falha ao criar sessão.' })
   }
+
+  logEvento('info', 'app.login.ok', { atleta_id: atletaId, clube_id: clubeIdOk })
 
   // Dados do atleta e clube
   const [{ data: atleta }, { data: clube }] = await Promise.all([

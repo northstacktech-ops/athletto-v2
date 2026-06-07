@@ -8,7 +8,10 @@ export function useTurmas() {
     return gestor.value?.clube_id ?? ''
   }
 
-  async function listar(incluir_inativas = false) {
+  async function listar(
+    incluir_inativas = false,
+    opts?: { limite?: number; offset?: number },
+  ) {
     let query = supabase
       .from('turmas')
       .select('*, atleta_turma(count)')
@@ -16,7 +19,13 @@ export function useTurmas() {
 
     if (!incluir_inativas) query = query.eq('ativo', true)
 
-    const { data, error } = await query.order('nome')
+    query = query.order('nome')
+    if (opts?.limite != null) {
+      const offset = opts.offset ?? 0
+      query = query.range(offset, offset + opts.limite - 1)
+    }
+
+    const { data, error } = await query
     const mapeado = (data ?? []).map((t: any) => ({
       ...t,
       total_atletas: Number(t.atleta_turma?.[0]?.count ?? 0),

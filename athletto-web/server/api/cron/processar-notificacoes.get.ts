@@ -1,5 +1,6 @@
 import { defineEventHandler, getHeader, createError } from 'h3'
 import { getServiceClient } from '~~/server/utils/appAtleta'
+import { logEvento, erroParaLog } from '~~/server/utils/logger'
 
 /**
  * GET /api/cron/processar-notificacoes
@@ -27,7 +28,7 @@ export default defineEventHandler(async (event) => {
 
   const { data, error } = await supabase.rpc('app_gerar_lembretes_pagamento')
   if (error) {
-    console.error('[cron/processar-notificacoes] erro rpc:', error)
+    logEvento('error', 'cron.processar_notificacoes.rpc_erro', { erro: erroParaLog(error) })
     throw createError({ statusCode: 500, statusMessage: 'Falha ao gerar lembretes.' })
   }
 

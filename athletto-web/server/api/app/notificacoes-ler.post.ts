@@ -1,5 +1,13 @@
-import { defineEventHandler, readBody, createError, getMethod } from 'h3'
+import { defineEventHandler, createError, getMethod } from 'h3'
 import { getServiceClient, aplicarCorsApp, validarSessao } from '~~/server/utils/appAtleta'
+import { lerBodyValidado } from '~~/server/utils/validacao'
+import { logEvento, erroParaLog } from '~~/server/utils/logger'
+import { z } from 'zod'
+
+const notifLerSchema = z.object({
+  id: z.string().trim().min(1).optional(),
+  todas: z.boolean().optional(),
+})
 
 /**
  * POST /api/app/notificacoes-ler  (auth)
@@ -17,9 +25,9 @@ export default defineEventHandler(async (event) => {
   const sessao = await validarSessao(event)
   const supabase = getServiceClient(event)
 
-  const body = await readBody<{ id?: string; todas?: boolean }>(event)
-  const todas = body?.todas === true
-  const id = body?.id ? String(body.id).trim() : ''
+  const body = await lerBodyValidado(event, notifLerSchema)
+  const todas = body.todas === true
+  const id = body.id ?? ''
 
   if (!todas && !id) {
     throw createError({ statusCode: 400, statusMessage: 'Informe `id` ou `todas`.' })
@@ -40,7 +48,7 @@ export default defineEventHandler(async (event) => {
 
   const { error } = await query
   if (error) {
-    console.error('[app/notificacoes-ler] erro:', error)
+    logEvento('error', 'app.notificacoes_ler.erro', { atleta_id: sessao.atleta_id, erro: erroParaLog(error) })
     throw createError({ statusCode: 500, statusMessage: 'Falha ao marcar como lida.' })
   }
 

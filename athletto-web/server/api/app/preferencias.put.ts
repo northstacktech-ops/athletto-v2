@@ -1,5 +1,13 @@
-import { defineEventHandler, readBody, createError, getMethod } from 'h3'
+import { defineEventHandler, createError, getMethod } from 'h3'
 import { getServiceClient, aplicarCorsApp, validarSessao } from '~~/server/utils/appAtleta'
+import { lerBodyValidado } from '~~/server/utils/validacao'
+import { logEvento, erroParaLog } from '~~/server/utils/logger'
+import { z } from 'zod'
+
+const prefsSchema = z.object({
+  notif_avisos: z.boolean().optional(),
+  notif_pagamento: z.boolean().optional(),
+})
 
 /**
  * PUT /api/app/preferencias  (auth)
@@ -15,7 +23,7 @@ export default defineEventHandler(async (event) => {
   const sessao = await validarSessao(event)
   const supabase = getServiceClient(event)
 
-  const body = await readBody<{ notif_avisos?: boolean; notif_pagamento?: boolean }>(event)
+  const body = await lerBodyValidado(event, prefsSchema)
 
   // Lê o estado atual para preservar campos não enviados (default true).
   const { data: atual } = await supabase
@@ -48,7 +56,7 @@ export default defineEventHandler(async (event) => {
     .single()
 
   if (error) {
-    console.error('[app/preferencias] erro upsert:', error)
+    logEvento('error', 'app.preferencias.upsert_erro', { atleta_id: sessao.atleta_id, erro: erroParaLog(error) })
     throw createError({ statusCode: 500, statusMessage: 'Falha ao salvar preferências.' })
   }
 

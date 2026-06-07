@@ -1,5 +1,15 @@
-import { defineEventHandler, readBody, createError, getMethod } from 'h3'
+import { defineEventHandler, createError, getMethod } from 'h3'
 import { getServiceClient, aplicarCorsApp, rateLimited } from '~~/server/utils/appAtleta'
+import { lerBodyValidado } from '~~/server/utils/validacao'
+import { logEvento, erroParaLog } from '~~/server/utils/logger'
+import { z } from 'zod'
+
+const consultarCpfSchema = z.object({
+  cpf: z
+    .string({ required_error: 'CPF inválido.' })
+    .transform((s) => s.replace(/\D/g, ''))
+    .refine((s) => s.length === 11, 'CPF inválido.'),
+})
 
 /**
  * POST /api/app/consultar-cpf
@@ -16,16 +26,12 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 429, statusMessage: 'Muitas tentativas. Aguarde um minuto.' })
   }
 
-  const body = await readBody<{ cpf?: string }>(event)
-  const cpf = String(body?.cpf ?? '').replace(/\D/g, '')
-  if (cpf.length !== 11) {
-    throw createError({ statusCode: 400, statusMessage: 'CPF inválido.' })
-  }
+  const { cpf } = await lerBodyValidado(event, consultarCpfSchema)
 
   const supabase = getServiceClient(event)
   const { data, error } = await supabase.rpc('app_consultar_cpf', { p_cpf: cpf })
   if (error) {
-    console.error('[app/consultar-cpf] erro rpc:', error)
+    logEvento('error', 'app.consultar_cpf.rpc_erro', { erro: erroParaLog(error) })
     throw createError({ statusCode: 500, statusMessage: 'Falha ao consultar CPF.' })
   }
   return data
