@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart' show MediaType;
 
 import '../config.dart';
 import '../models/atleta.dart';
@@ -124,11 +125,21 @@ class Api {
   Never _throwFromBody(http.Response res) {
     final data = _decode(res);
     String? codigo;
-    if (data is Map && data['erro'] != null) {
-      codigo = data['erro'].toString();
+    String? msgServidor;
+    if (data is Map) {
+      if (data['erro'] != null) codigo = data['erro'].toString();
+      final sm = data['statusMessage'] ?? data['message'];
+      if (sm != null) msgServidor = sm.toString();
     }
+    // Prioridade: código conhecido → mensagem amigável; senão, a mensagem do
+    // servidor (ex.: "Formato inválido"); senão, o texto genérico.
+    final mensagem = codigo != null
+        ? mensagemErro(codigo)
+        : (msgServidor != null && msgServidor.trim().isNotEmpty
+            ? msgServidor
+            : mensagemErro(null));
     throw ApiException(
-      mensagemErro(codigo),
+      mensagem,
       codigo: codigo,
       statusCode: res.statusCode,
     );
@@ -316,7 +327,19 @@ class Api {
       final req = http.MultipartRequest('POST', _uri('/foto'));
       req.headers['Authorization'] = 'Bearer $token';
       req.headers['Accept'] = 'application/json';
-      req.files.add(await http.MultipartFile.fromPath('foto', arquivo.path));
+      // Define explicitamente o content-type da imagem — sem isso alguns
+      // dispositivos enviam como octet-stream e o servidor recusa (400).
+      final p = arquivo.path.toLowerCase();
+      final mime = (p.endsWith('.jpg') || p.endsWith('.jpeg'))
+          ? MediaType('image', 'jpeg')
+          : p.endsWith('.webp')
+              ? MediaType('image', 'webp')
+              : MediaType('image', 'png');
+      req.files.add(await http.MultipartFile.fromPath(
+        'foto',
+        arquivo.path,
+        contentType: mime,
+      ));
       final streamed = await req.send().timeout(Config.requestTimeout);
       res = await http.Response.fromStream(streamed);
     } on TimeoutException {

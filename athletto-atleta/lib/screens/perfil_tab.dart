@@ -188,11 +188,15 @@ class _PerfilTabState extends State<PerfilTab> {
       setState(() => _uploadingFoto = false);
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(e.mensagem)));
-    } catch (_) {
+    } catch (e) {
       if (!context.mounted) return;
       setState(() => _uploadingFoto = false);
+      // Mostra o erro real (temporário) para diagnosticar a falha no Android.
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Não foi possível atualizar a foto.')),
+        SnackBar(
+          content: Text('Não foi possível atualizar a foto. Detalhe: $e'),
+          duration: const Duration(seconds: 8),
+        ),
       );
     }
   }
@@ -493,12 +497,13 @@ class _PerfilTabState extends State<PerfilTab> {
 
     return Scaffold(
       backgroundColor: AppColors.ink,
-      body: Column(
+      body: ListView(
+        padding: EdgeInsets.zero,
         children: [
           _header(atleta),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(24, 22, 24, 8),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 22, 24, 8),
+            child: Column(
               children: [
                 _clubeAtual(context, atleta, clube),
                 const SizedBox(height: 22),
@@ -530,7 +535,10 @@ class _PerfilTabState extends State<PerfilTab> {
     final subtitulo = numero != null ? 'Atleta · #$numero' : 'Atleta';
 
     return Container(
-      color: AppColors.lime,
+      decoration: const BoxDecoration(
+        color: AppColors.lime,
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(8)),
+      ),
       child: SafeArea(
         bottom: false,
         child: Padding(

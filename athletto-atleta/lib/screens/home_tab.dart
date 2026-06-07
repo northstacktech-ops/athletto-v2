@@ -118,51 +118,49 @@ class _HomeTabState extends State<HomeTab> {
         statusBarIconBrightness: Brightness.dark,
         statusBarBrightness: Brightness.light,
       ),
-      child: Column(
-        children: [
-          _LimeHeader(
-            nome: atleta?.primeiroNome ?? 'Atleta',
-            fotoUrl: atleta?.fotoUrl,
-            onBell: () => _go('alertas'),
-          ),
-          Expanded(
-            child: RefreshIndicator(
-              onRefresh: _carregar,
-              color: AppColors.lime,
-              child: _corpo(),
+      child: RefreshIndicator(
+        onRefresh: _carregar,
+        color: AppColors.lime,
+        child: ListView(
+          padding: EdgeInsets.zero,
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: [
+            _LimeHeader(
+              nome: atleta?.primeiroNome ?? 'Atleta',
+              fotoUrl: atleta?.fotoUrl,
+              onBell: () => _go('alertas'),
             ),
-          ),
-        ],
+            _corpoConteudo(),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _corpo() {
+  Widget _corpoConteudo() {
     if (_loading) {
-      return ListView(
-        children: const [
-          SizedBox(height: 160),
-          LoadingView(),
-        ],
+      return const Padding(
+        padding: EdgeInsets.only(top: 140),
+        child: LoadingView(),
       );
     }
     if (_erro != null) {
-      return ListView(
-        children: [
-          const SizedBox(height: 120),
-          ErrorView(mensagem: _erro!, onRetry: _carregar),
-        ],
+      return Padding(
+        padding: const EdgeInsets.only(top: 100),
+        child: ErrorView(mensagem: _erro!, onRetry: _carregar),
       );
     }
 
     final proximos = _proximos;
 
-    return ListView(
+    return Padding(
       padding: const EdgeInsets.fromLTRB(
           AppSpacing.screenH, AppSpacing.screenH, AppSpacing.screenH, 8),
-      children: [
-        // Citação
-        const _QuoteCard(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Citação
+          const _QuoteCard(),
         const SizedBox(height: 28),
 
         // Grid 2×2 de StatCards
@@ -229,7 +227,8 @@ class _HomeTabState extends State<HomeTab> {
                   date: _fmtData(e.dataInicio),
                 ),
               )),
-      ],
+        ],
+      ),
     );
   }
 
@@ -253,7 +252,10 @@ class _LimeHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      color: AppColors.lime,
+      decoration: const BoxDecoration(
+        color: AppColors.lime,
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(8)),
+      ),
       child: SafeArea(
         bottom: false,
         child: Padding(
