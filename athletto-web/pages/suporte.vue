@@ -189,7 +189,7 @@ definePageMeta({ layout: false })
 useHead({ title: 'Suporte — Athletto' })
 
 const toast = useToast()
-const whatsappLink = gerarLinkWhatsApp('(11) 99999-0000', 'Oi, preciso de ajuda com o Athletto!')
+const whatsappLink = gerarLinkWhatsApp('(95) 9177-5523', 'Oi, preciso de ajuda com o Athletto!')
 
 const busca = ref('')
 const categoriaAtiva = ref('todos')
