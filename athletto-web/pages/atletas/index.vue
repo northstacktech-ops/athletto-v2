@@ -187,6 +187,17 @@
       </div>
     </div>
 
+    <!-- Ver mais -->
+    <div v-if="!loading && temMais" class="flex justify-center pt-2">
+      <button
+        :disabled="carregandoMais"
+        class="px-4 py-2 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-surface-elevated-dark border border-slate-200 dark:border-white/[0.10] hover:bg-slate-50 dark:hover:bg-white/[0.05] disabled:opacity-50 transition-colors"
+        @click="verMais"
+      >
+        {{ carregandoMais ? 'Carregando...' : 'Ver mais' }}
+      </button>
+    </div>
+
     <!-- ── Modais ──────────────────────────────────────────── -->
     <AtletasFormModal
       v-if="abrirCadastro"
@@ -221,6 +232,11 @@ const todos = ref<Atleta[]>([])
 const turmas = ref<Turma[]>([])
 const vista = ref<'grid' | 'tabela'>('grid')
 
+// Paginação: carrega em blocos para não puxar todos os atletas de uma vez
+const BLOCO = 50
+const carregandoMais = ref(false)
+const temMais = ref(true)
+
 const busca = ref('')
 const filtroStatus = ref<AtletaStatus | ''>('')
 const filtroSaude = ref<AtletaSaude | ''>('')
@@ -233,12 +249,28 @@ const atletaSelecionado = ref<Atleta | null>(null)
 async function carregar() {
   loading.value = true
   const [a, t] = await Promise.all([
-    atletasComp.listar({ incluir_inativos: true }),
+    atletasComp.listar({ incluir_inativos: true, limite: BLOCO, offset: 0 }),
     turmasComp.listar(),
   ])
-  todos.value = a.data ?? []
+  const lista = a.data ?? []
+  todos.value = lista
   turmas.value = t.data ?? []
+  temMais.value = lista.length === BLOCO
   loading.value = false
+}
+
+async function verMais() {
+  if (carregandoMais.value || !temMais.value) return
+  carregandoMais.value = true
+  const { data } = await atletasComp.listar({
+    incluir_inativos: true,
+    limite: BLOCO,
+    offset: todos.value.length,
+  })
+  const novos = data ?? []
+  todos.value = [...todos.value, ...novos]
+  temMais.value = novos.length === BLOCO
+  carregandoMais.value = false
 }
 
 onMounted(carregar)

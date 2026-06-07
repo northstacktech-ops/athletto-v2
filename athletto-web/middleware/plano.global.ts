@@ -7,7 +7,7 @@
  * Não se aplica a: /upgrade, /login, /admin/*, /onboarding, páginas públicas.
  */
 
-const BYPASS = ['/upgrade', '/login', '/onboarding', '/privacidade', '/termos']
+const BYPASS = ['/upgrade', '/login', '/onboarding', '/privacidade', '/termos', '/suporte']
 const BYPASS_PREFIX = ['/admin', '/cadastro/']
 
 function isBypassed(path: string) {

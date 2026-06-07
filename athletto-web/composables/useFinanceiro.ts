@@ -172,6 +172,8 @@ export function useFinanceiro() {
     caixinha_id?: string
     status?: string
     atleta_id?: string
+    limite?: number
+    offset?: number
   }) {
     let query = supabase
       .from('cobrancas')
@@ -182,7 +184,13 @@ export function useFinanceiro() {
     if (filtros?.status) query = query.eq('status', filtros.status)
     if (filtros?.atleta_id) query = query.eq('atleta_id', filtros.atleta_id)
 
-    const { data, error } = await query.order('data_vencimento')
+    query = query.order('data_vencimento')
+    if (filtros?.limite != null) {
+      const offset = filtros.offset ?? 0
+      query = query.range(offset, offset + filtros.limite - 1)
+    }
+
+    const { data, error } = await query
     return { data: data as Cobranca[] | null, error }
   }
 

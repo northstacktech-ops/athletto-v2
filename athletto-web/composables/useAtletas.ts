@@ -14,6 +14,8 @@ export function useAtletas() {
     turma_id?: string
     busca?: string
     incluir_inativos?: boolean
+    limite?: number
+    offset?: number
   }) {
     // Filtro por turma: busca os atletas vinculados àquela turma antes
     let idsDaTurma: string[] | null = null
@@ -42,7 +44,15 @@ export function useAtletas() {
       )
     }
 
-    const { data, error } = await query.order('nome')
+    query = query.order('nome')
+
+    // Paginação opcional (retrocompatível: sem os params traz tudo)
+    if (filtros?.limite != null) {
+      const offset = filtros.offset ?? 0
+      query = query.range(offset, offset + filtros.limite - 1)
+    }
+
+    const { data, error } = await query
     return { data: data as Atleta[] | null, error }
   }
 

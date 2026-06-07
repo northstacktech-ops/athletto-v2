@@ -78,7 +78,7 @@
         </p>
 
         <p class="text-xs text-gray-400 pt-4 border-t border-gray-100 dark:border-white/[0.06]">
-          Contato: <strong>contato@athletto.com.br</strong>
+          Contato: <strong>athletto.empresa@gmail.com</strong>
         </p>
       </div>
     </article>

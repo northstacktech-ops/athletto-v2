@@ -1,6 +1,7 @@
 import { defineEventHandler, readRawBody, getHeader, createError } from 'h3'
 import { createClient } from '@supabase/supabase-js'
 import { verificarHmacAbacatePay } from '~/server/utils/abacatepay'
+import { logEvento, erroParaLog } from '~~/server/utils/logger'
 import type { AbacateWebhookPayload } from '~/types/abacatepay'
 
 /**
@@ -38,7 +39,7 @@ export default defineEventHandler(async (event) => {
 
   if (!supabaseUrl || !serviceRole) {
     // Modo mock — log mas não persiste
-    console.warn('[webhook abacatepay] Supabase service role ausente — modo mock')
+    logEvento('warn', 'webhook.abacatepay.modo_mock', {})
     return { received: true, mock: true }
   }
 
@@ -93,7 +94,7 @@ export default defineEventHandler(async (event) => {
     .single()
 
   if (logErr) {
-    console.error('[webhook abacatepay] falha ao registrar log:', logErr)
+    logEvento('error', 'webhook.abacatepay.log_erro', { payment_id: paymentId, evento, erro: erroParaLog(logErr) })
     throw createError({ statusCode: 500, statusMessage: 'log_failed' })
   }
 
@@ -124,7 +125,7 @@ export default defineEventHandler(async (event) => {
 
     return { received: true, processed: true }
   } catch (err: any) {
-    console.error('[webhook abacatepay] falha ao processar:', err)
+    logEvento('error', 'webhook.abacatepay.processar_erro', { payment_id: paymentId, evento, cobranca_id: cobrancaId, erro: erroParaLog(err) })
     await supabase
       .from('webhook_logs')
       .update({ status: 'erro', erro: String(err?.message ?? err) })

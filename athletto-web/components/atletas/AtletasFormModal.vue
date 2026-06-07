@@ -18,6 +18,24 @@
 
         <form class="px-6 py-5 space-y-4 overflow-y-auto" @submit.prevent="salvar">
 
+          <!-- Foto do atleta -->
+          <div class="flex items-center gap-4 pb-1">
+            <BrandAvatarUploader
+              :model-value="fotoUrl"
+              label="Foto do atleta"
+              shape="circle"
+              :size="84"
+              :uploading="uploadingFoto"
+              :placeholder-iniciais="iniciaisAtleta"
+              hide-meta
+              @confirm="onFotoConfirm"
+            />
+            <div class="text-xs text-gray-500 dark:text-white/50 max-w-[220px]">
+              <p class="text-sm font-semibold text-gray-700 dark:text-gray-300">Foto do atleta</p>
+              <p class="mt-0.5">PNG ou JPEG. Será recortada e salva em 512x512.</p>
+            </div>
+          </div>
+
           <!-- Nome -->
           <div>
             <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Nome completo *</label>
@@ -171,7 +189,7 @@
 </template>
 
 <script setup lang="ts">
-import { formatCpf, validarCpf, formatDiasSemana, formatHorario } from '~/utils/format'
+import { formatCpf, validarCpf, formatDiasSemana, formatHorario, getIniciais } from '~/utils/format'
 import type { Atleta, AtletaStatus, AtletaSaude, Turma } from '~/types'
 
 const props = defineProps<{
@@ -183,10 +201,17 @@ const emit = defineEmits<{ (e: 'close'): void; (e: 'salvo'): void }>()
 const atletasComp = useAtletas()
 const toast = useToast()
 const { clube } = useAuth()
+const { uploadToBucket } = useImageUpload()
 
 const editando = computed(() => !!props.atleta)
 const loading = ref(false)
 const erroCpf = ref<string | null>(null)
+
+// ── Foto do atleta (mesmo caminho do app: {clube_id}/atletas/{atleta_id}.png) ──
+const fotoUrl = ref<string | null>(props.atleta?.foto_url ?? null)
+const fotoFile = ref<File | null>(null) // pendente p/ atleta novo (sem id ainda)
+const uploadingFoto = ref(false)
+const iniciaisAtleta = computed(() => getIniciais(form.nome || props.atleta?.nome || 'A'))
 
 const cpfMascarado = ref(props.atleta?.cpf ? formatCpf(props.atleta.cpf) : '')
 
@@ -234,6 +259,36 @@ onMounted(async () => {
 const podeSalvar = computed(
   () => form.nome.trim().length >= 3 && validarCpf(form.cpf),
 )
+
+// Sobe a foto para o bucket `avatares` (caminho determinístico = foto única)
+// e persiste a URL com cache-bust em atletas.foto_url.
+async function subirFoto(atletaId: string, file: File): Promise<string> {
+  if (!clube.value) throw new Error('Sem clube no contexto')
+  const path = `${clube.value.id}/atletas/${atletaId}.png`
+  const { url, error } = await uploadToBucket('avatares', path, file)
+  if (error || !url) throw error ?? new Error('Falha no upload da foto')
+  const { error: updErr } = await atletasComp.atualizar(atletaId, { foto_url: url })
+  if (updErr) throw updErr
+  return url
+}
+
+async function onFotoConfirm(file: File) {
+  // Edição: sobe direto (já temos id). Novo: guarda p/ depois do cadastro.
+  if (editando.value && props.atleta) {
+    uploadingFoto.value = true
+    try {
+      fotoUrl.value = await subirFoto(props.atleta.id, file)
+      toast.success('Foto atualizada')
+    } catch (err: any) {
+      toast.error('Falha no upload', err?.message ?? '')
+    } finally {
+      uploadingFoto.value = false
+    }
+  } else {
+    fotoFile.value = file
+    fotoUrl.value = URL.createObjectURL(file)
+  }
+}
 
 function validarCpfBlur() {
   if (form.cpf.length === 11) {
@@ -291,6 +346,14 @@ async function salvar() {
       })
       if (error || !data) throw error ?? new Error('Não foi possível cadastrar o atleta')
       await sincronizarTurmas(data.id)
+      // Foto pendente: agora temos o id → sobe e grava foto_url.
+      if (fotoFile.value) {
+        try {
+          await subirFoto(data.id, fotoFile.value)
+        } catch (errFoto: any) {
+          toast.error('Atleta criado, mas a foto falhou', errFoto?.message ?? '')
+        }
+      }
       toast.success('Atleta cadastrado')
     }
     emit('salvo')

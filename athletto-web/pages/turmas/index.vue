@@ -222,6 +222,7 @@ const turmaVinculando = ref<Turma | null>(null)
 
 const vista = ref<'grid' | 'tabela'>('grid')
 const busca = ref('')
+const buscaDebounced = useDebouncedRef(busca, 400)
 const filtroStatus = ref('')
 const sortField = ref<'nome' | 'atletas' | 'mensalidade' | null>(null)
 const sortAsc = ref(true)
@@ -239,7 +240,7 @@ const limiteEval = computed(() => planos.avaliarTurmas(ativas.value.length))
 
 const filtradas = computed(() => {
   let list = turmas.value
-  const q = busca.value.trim().toLowerCase()
+  const q = buscaDebounced.value.trim().toLowerCase()
   if (q) {
     list = list.filter((t) =>
       t.nome.toLowerCase().includes(q) ||

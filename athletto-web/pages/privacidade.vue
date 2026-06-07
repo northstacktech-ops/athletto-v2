@@ -14,69 +14,141 @@
 
       <div class="prose-content mt-6 text-sm text-gray-700 dark:text-gray-300 leading-relaxed space-y-5">
         <p>
-          Esta política descreve como a <strong>Athletto</strong> coleta, usa, armazena e
-          protege os dados pessoais dos clubes, gestores, atletas e responsáveis
-          que utilizam nossa plataforma. Seguimos integralmente a Lei Geral de
-          Proteção de Dados Pessoais (Lei nº 13.709/2018 — LGPD).
+          Esta Política de Privacidade descreve como a <strong>Athletto</strong> coleta,
+          usa, armazena, compartilha e protege os dados pessoais de clubes, gestores,
+          atletas e responsáveis que utilizam nossa plataforma. Seguimos integralmente
+          a Lei Geral de Proteção de Dados Pessoais (Lei nº 13.709/2018 — LGPD).
         </p>
 
-        <h2 class="text-lg font-bold text-gray-900 dark:text-white pt-3">1. Dados que coletamos</h2>
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white pt-3">1. Identificação do controlador</h2>
+        <p>
+          O controlador dos dados pessoais tratados nesta plataforma é:
+        </p>
         <ul class="list-disc pl-5 space-y-1">
-          <li><strong>Do gestor:</strong> nome, CPF, e-mail, telefone, foto opcional.</li>
-          <li><strong>Do clube:</strong> nome, CNPJ, modalidade, endereço, logo.</li>
-          <li><strong>Dos atletas:</strong> nome, CPF, data de nascimento, posição, foto opcional, histórico de lesões, observações médicas, status de saúde.</li>
-          <li><strong>Do responsável:</strong> telefone para contato.</li>
-          <li><strong>Financeiros:</strong> valores, datas e histórico de pagamentos. Não armazenamos dados de cartão — pagamentos via Pix são processados pelo AbacatePay.</li>
-          <li><strong>Operacionais:</strong> frequência, eventos do calendário, mensagens internas.</li>
+          <li><strong>Nome comercial:</strong> Athletto</li>
+          <li><strong>Responsável:</strong> Athletto — negócio em processo de formalização. Os dados de registro (razão social, CNPJ e endereço) serão atualizados nesta página assim que a constituição da empresa for concluída.</li>
+          <li><strong>E-mail:</strong> <strong>athletto.empresa@gmail.com</strong></li>
+          <li><strong>Telefone / WhatsApp:</strong> <strong>+55 (95) 9177-5523</strong></li>
+        </ul>
+        <p>
+          Observação sobre papéis na LGPD: em relação aos dados que o gestor cadastra
+          sobre seus atletas, o clube/gestor atua como <strong>controlador</strong> desses
+          dados e a Athletto atua como <strong>operadora</strong>, tratando-os conforme as
+          instruções do clube e os limites desta política.
+        </p>
+
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white pt-3">2. Dados coletados e finalidade</h2>
+        <ul class="list-disc pl-5 space-y-1">
+          <li><strong>Do gestor:</strong> nome, CPF, e-mail, telefone e foto opcional — para autenticação, contato e emissão de comprovantes.</li>
+          <li><strong>Do clube:</strong> nome, CNPJ, modalidade, endereço e logo — para identificação e operação da conta.</li>
+          <li><strong>Dos atletas:</strong> nome, CPF, data de nascimento, posição, número da camisa, foto opcional, histórico de lesões, observações médicas e status de saúde — para gestão esportiva, frequência e segurança do atleta.</li>
+          <li><strong>Do responsável:</strong> nome e telefone de contato — para comunicação sobre cobranças, frequência e avisos do clube.</li>
+          <li><strong>Financeiros:</strong> valores, datas e histórico de pagamentos — para gestão de mensalidades e cobranças. <strong>Não armazenamos dados de cartão</strong>; pagamentos via Pix são processados pela AbacatePay.</li>
+          <li><strong>Operacionais:</strong> frequência, eventos do calendário, mensagens internas e notificações — para o funcionamento das funcionalidades.</li>
+          <li><strong>Técnicos:</strong> registros de acesso (logs), endereço IP e identificadores de sessão — para segurança e prevenção a fraudes.</li>
         </ul>
 
-        <h2 class="text-lg font-bold text-gray-900 dark:text-white pt-3">2. Por que coletamos</h2>
-        <p>Usamos esses dados exclusivamente para:</p>
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white pt-3">3. Base legal</h2>
+        <p>O tratamento dos dados se apoia nas seguintes bases legais da LGPD (art. 7º e art. 11):</p>
         <ul class="list-disc pl-5 space-y-1">
-          <li>Operar as funcionalidades do sistema (cadastro, frequência, cobrança).</li>
-          <li>Gerar relatórios e indicadores para a gestão do clube.</li>
-          <li>Cumprir obrigações legais e fiscais.</li>
-          <li>Manter a segurança e integridade da plataforma.</li>
+          <li><strong>Execução de contrato</strong> (art. 7º, V): operação das funcionalidades contratadas pelo clube.</li>
+          <li><strong>Cumprimento de obrigação legal/regulatória</strong> (art. 7º, II): obrigações fiscais e contábeis.</li>
+          <li><strong>Legítimo interesse</strong> (art. 7º, IX): segurança da plataforma, prevenção a fraudes e melhoria do serviço.</li>
+          <li><strong>Consentimento</strong> (art. 7º, I e art. 11, I): para dados sensíveis de saúde do atleta (histórico de lesões, observações médicas, tipo sanguíneo), coletados pelo clube mediante autorização do titular ou de seu responsável legal.</li>
         </ul>
 
-        <h2 class="text-lg font-bold text-gray-900 dark:text-white pt-3">3. Compartilhamento</h2>
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white pt-3">4. Compartilhamento de dados</h2>
         <p>
           Nunca vendemos ou cedemos dados a terceiros para fins comerciais.
-          Compartilhamos apenas com operadores essenciais (AbacatePay para Pix,
-          Supabase para banco de dados, Cloudflare para infraestrutura), todos
-          sob acordo de processamento conforme a LGPD.
+          Compartilhamos dados apenas com operadores essenciais à prestação do
+          serviço, todos sob contrato de tratamento de dados conforme a LGPD:
         </p>
-
-        <h2 class="text-lg font-bold text-gray-900 dark:text-white pt-3">4. Seus direitos</h2>
-        <p>Você (titular dos dados) tem direito a:</p>
         <ul class="list-disc pl-5 space-y-1">
-          <li>Acessar todos os dados que mantemos sobre você.</li>
-          <li>Corrigir dados incompletos ou desatualizados.</li>
-          <li>Solicitar exclusão (anonimização após retenção legal).</li>
-          <li>Solicitar exportação em formato CSV.</li>
-          <li>Revogar consentimento a qualquer momento.</li>
+          <li><strong>Supabase:</strong> banco de dados, autenticação e armazenamento de arquivos (fotos/logos).</li>
+          <li><strong>AbacatePay:</strong> processamento de pagamentos via Pix.</li>
+          <li><strong>Vercel:</strong> hospedagem e infraestrutura de execução da aplicação.</li>
         </ul>
-        <p>Para exercer qualquer direito, escreva para <strong>privacidade@athletto.com.br</strong>.</p>
-
-        <h2 class="text-lg font-bold text-gray-900 dark:text-white pt-3">5. Retenção</h2>
         <p>
-          Dados ativos ficam armazenados enquanto a conta estiver ativa. Após
-          cancelamento, mantemos por 90 dias para permitir reativação, e depois
-          anonimizamos os campos pessoais (mantendo apenas registros agregados
-          para obrigações fiscais).
+          Eventuais transferências internacionais de dados ocorrem somente com
+          provedores que adotem garantias adequadas de proteção, nos termos do
+          art. 33 da LGPD.
         </p>
 
-        <h2 class="text-lg font-bold text-gray-900 dark:text-white pt-3">6. Segurança</h2>
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white pt-3">5. Retenção dos dados</h2>
         <p>
-          Aplicamos criptografia em trânsito (TLS), criptografia em repouso no
-          banco, autenticação de dois fatores opcional, isolamento por clube
-          via Row Level Security e backups diários.
+          Os dados ativos são armazenados enquanto a conta estiver ativa. Após o
+          cancelamento, mantemos os dados por 90 dias para permitir reativação;
+          decorrido esse prazo, os campos pessoais são anonimizados, preservando-se
+          apenas registros agregados e os necessários ao cumprimento de obrigações
+          legais e fiscais, pelos prazos exigidos em lei.
         </p>
 
-        <h2 class="text-lg font-bold text-gray-900 dark:text-white pt-3">7. Encarregado (DPO)</h2>
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white pt-3">6. Direitos do titular</h2>
+        <p>Nos termos do art. 18 da LGPD, você (titular dos dados) tem direito a:</p>
+        <ul class="list-disc pl-5 space-y-1">
+          <li><strong>Acesso:</strong> confirmar a existência de tratamento e acessar os dados que mantemos sobre você.</li>
+          <li><strong>Correção:</strong> corrigir dados incompletos, inexatos ou desatualizados.</li>
+          <li><strong>Exclusão/anonimização:</strong> solicitar a eliminação ou anonimização dos dados, respeitadas as retenções legais.</li>
+          <li><strong>Portabilidade:</strong> solicitar a exportação dos seus dados em formato estruturado (CSV).</li>
+          <li><strong>Revogação de consentimento:</strong> revogar, a qualquer momento, o consentimento dado para tratamentos baseados nessa hipótese.</li>
+          <li><strong>Informação:</strong> saber com quais entidades seus dados são compartilhados e oporse a tratamentos.</li>
+        </ul>
         <p>
-          Em caso de dúvidas, contate nosso encarregado de proteção de dados
-          em <strong>dpo@athletto.com.br</strong>.
+          Para exercer qualquer um desses direitos, escreva para
+          <strong>athletto.empresa@gmail.com</strong>. Responderemos no menor prazo possível,
+          observados os limites legais.
+        </p>
+
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white pt-3">7. Segurança da informação</h2>
+        <p>
+          Adotamos medidas técnicas e administrativas para proteger os dados,
+          incluindo criptografia em trânsito (TLS), criptografia em repouso no banco,
+          isolamento entre clubes via Row Level Security (RLS), controle de acesso por
+          autenticação e backups periódicos. Em caso de incidente de segurança que
+          possa acarretar risco relevante aos titulares, comunicaremos os afetados e a
+          ANPD conforme exigido pela LGPD.
+        </p>
+
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white pt-3">8. Dados de menores de idade</h2>
+        <p>
+          A plataforma trata dados de atletas que podem ser crianças ou adolescentes.
+          Esses dados são fornecidos pelo clube/gestor, que declara possuir o
+          consentimento específico e em destaque dado por pelo menos um dos pais ou
+          responsável legal, no melhor interesse do menor, nos termos do art. 14 da
+          LGPD. A Athletto não coleta dados de menores diretamente sem essa
+          intermediação.
+        </p>
+
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white pt-3">9. Cookies e tecnologias semelhantes</h2>
+        <p>
+          Utilizamos cookies e armazenamento local estritamente necessários ao
+          funcionamento da plataforma (sessão de login, preferências de interface).
+          Não utilizamos cookies de publicidade de terceiros. Você pode gerenciar
+          cookies nas configurações do seu navegador, ciente de que desabilitá-los
+          pode afetar o funcionamento do serviço.
+        </p>
+
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white pt-3">10. Alterações nesta política</h2>
+        <p>
+          Esta política pode ser atualizada periodicamente. Alterações relevantes
+          serão comunicadas por e-mail e/ou aviso na plataforma. A data da última
+          atualização consta no topo deste documento. O uso continuado após as
+          alterações implica concordância com a versão vigente.
+        </p>
+
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white pt-3">11. Encarregado (DPO) e contato</h2>
+        <p>
+          Para dúvidas, solicitações de direitos ou comunicações sobre proteção de
+          dados, contate nosso Encarregado pelo Tratamento de Dados Pessoais (DPO):
+        </p>
+        <ul class="list-disc pl-5 space-y-1">
+          <li><strong>Encarregado (DPO):</strong> Equipe Athletto (o encarregado será nomeado formalmente na constituição da empresa)</li>
+          <li><strong>E-mail:</strong> <strong>athletto.empresa@gmail.com</strong></li>
+          <li><strong>Telefone / WhatsApp:</strong> <strong>+55 (95) 9177-5523</strong></li>
+        </ul>
+        <p>
+          Você também pode apresentar reclamação à Autoridade Nacional de Proteção de
+          Dados (ANPD) caso entenda que seus direitos não foram atendidos.
         </p>
       </div>
     </article>
@@ -86,5 +158,5 @@
 <script setup lang="ts">
 definePageMeta({ layout: false })
 useHead({ title: 'Privacidade — Athletto' })
-const dataAtualizacao = '15 de maio de 2026'
+const dataAtualizacao = '6 de junho de 2026'
 </script>
