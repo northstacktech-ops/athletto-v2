@@ -1,9 +1,16 @@
 <template>
-  <div class="space-y-4 animate-fade-in">
+  <div class="min-h-screen bg-gray-50 dark:bg-surface-canvas-dark py-10 px-4">
+    <div class="max-w-5xl mx-auto space-y-4 animate-fade-in">
 
-    <div>
-      <h1 class="page-title">Suporte</h1>
-      <p class="page-description">Como podemos ajudar?</p>
+    <div class="flex items-start justify-between gap-3">
+      <div>
+        <h1 class="page-title">Ajuda e Suporte</h1>
+        <p class="page-description">Como podemos ajudar?</p>
+      </div>
+      <NuxtLink to="/" class="shrink-0 text-xs font-semibold text-gray-500 hover:text-gray-700 inline-flex items-center gap-1 pt-1">
+        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        Voltar
+      </NuxtLink>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -119,17 +126,34 @@
           </div>
         </a>
 
-        <a href="mailto:suporte@athletto.com.br" class="block card-base p-4 shadow-card hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors">
+        <a href="mailto:athletto.empresa@gmail.com" class="block card-base p-4 shadow-card hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-500/15 flex items-center justify-center shrink-0">
               <svg class="w-5 h-5 text-brand-700 dark:text-brand-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
             </div>
             <div class="min-w-0">
               <p class="text-sm font-bold text-slate-900 dark:text-white">E-mail</p>
-              <p class="text-xs text-slate-500 truncate">suporte@athletto.com.br</p>
+              <p class="text-xs text-slate-500 truncate">athletto.empresa@gmail.com</p>
             </div>
           </div>
         </a>
+
+        <!-- Privacidade & direitos LGPD -->
+        <div class="card-base p-5 shadow-card">
+          <p class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Privacidade & seus dados (LGPD)</p>
+          <p class="text-sm text-slate-600 dark:text-slate-300">
+            Você pode solicitar acesso, correção, exclusão/anonimização ou
+            portabilidade dos seus dados, além de revogar consentimentos.
+          </p>
+          <p class="text-sm text-slate-600 dark:text-slate-300 mt-2">
+            Para exercer qualquer direito, escreva para
+            <a href="mailto:athletto.empresa@gmail.com" class="font-semibold text-brand-600 hover:text-brand-700">athletto.empresa@gmail.com</a>.
+          </p>
+          <NuxtLink to="/privacidade" class="inline-flex items-center gap-1 mt-3 text-xs font-semibold text-brand-600 hover:text-brand-700">
+            Ler a Política de Privacidade
+            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          </NuxtLink>
+        </div>
 
         <div class="card-base p-5 shadow-card">
           <p class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Horário de atendimento</p>
@@ -152,13 +176,16 @@
         </div>
       </aside>
     </div>
+    </div>
+    <UiToastContainer />
   </div>
 </template>
 
 <script setup lang="ts">
 import { gerarLinkWhatsApp } from '~/utils/format'
 
-definePageMeta({ layout: 'default' })
+// Página pública (acessível pelo rodapé do login) — sem layout do painel.
+definePageMeta({ layout: false })
 useHead({ title: 'Suporte — Athletto' })
 
 const toast = useToast()

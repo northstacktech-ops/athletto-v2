@@ -113,14 +113,25 @@ async function carregar() {
   const { data: lista } = await atletasComp.listar()
   atletas.value = (lista ?? []).filter((a) => a.ativo)
 
-  // 2. Todos os vínculos ativos de turma do clube (para saber quem está sem turma
-  //    e quem já está em outra). A RLS de atleta_turma escopa ao clube.
+  // 2. Vínculos ativos de turma restritos aos atletas do clube já carregados.
+  //    Evita puxar a tabela atleta_turma inteira; reflete o estado atual a cada
+  //    abertura do drawer (o componente é recriado via v-if).
+  const idsDoClube = atletas.value.map((a) => a.id)
+  const contagem = new Map<string, number>()
+  if (idsDoClube.length === 0) {
+    turmasPorAtleta.value = contagem
+    vinculados.value = new Set()
+    vinculadosOriginais.value = new Set()
+    loading.value = false
+    return
+  }
+
   const { data: vinc } = await supabase
     .from('atleta_turma')
     .select('atleta_id, turma_id')
     .eq('ativo', true)
+    .in('atleta_id', idsDoClube)
 
-  const contagem = new Map<string, number>()
   const nestaTurma = new Set<string>()
   ;(vinc ?? []).forEach((row: any) => {
     contagem.set(row.atleta_id, (contagem.get(row.atleta_id) ?? 0) + 1)

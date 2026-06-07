@@ -1,0 +1,36 @@
+# NOTA NATIVA (image_cropper): após `flutter pub get`, é necessário registrar a
+# UCropActivity no android/app/src/main/AndroidManifest.xml dentro de <application>:
+#   <activity android:name="com.yalantis.ucrop.UCropActivity"
+#       android:screenOrientation="portrait"
+#       android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
+# (Já incluída neste projeto — ver AndroidManifest.xml e NOTAS-NATIVAS.md.)
+name: athletto_atleta
+description: App mobile do atleta - Athletto
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.2.0
+  flutter_secure_storage: ^9.2.2
+  intl: ^0.19.0
+  url_launcher: ^6.3.0
+  google_fonts: ^6.2.1
+  lottie: ^3.1.2
+  image_picker: ^1.1.2
+  image_cropper: ^8.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/athletto-splash.json
+    - assets/img/

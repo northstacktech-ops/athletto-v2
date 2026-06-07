@@ -133,6 +133,17 @@
         Criar conta gratuita
       </NuxtLink>
     </p>
+
+    <!-- Links institucionais (discretos) -->
+    <div class="mt-6 flex items-center justify-center gap-4 text-xs text-gray-400">
+      <NuxtLink to="/privacidade" class="hover:text-gray-600 transition-colors">
+        Privacidade e Segurança
+      </NuxtLink>
+      <span class="text-gray-300">·</span>
+      <NuxtLink to="/suporte" class="hover:text-gray-600 transition-colors">
+        Ajuda e Suporte
+      </NuxtLink>
+    </div>
   </div>
 </template>
 

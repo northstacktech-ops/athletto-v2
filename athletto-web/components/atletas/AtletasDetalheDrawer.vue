@@ -122,6 +122,15 @@
                   <p class="font-semibold text-slate-900 dark:text-white">{{ atleta.app_primeiro_acesso ? 'Aguardando 1º acesso' : 'Já acessou' }}</p>
                 </div>
               </div>
+
+              <button
+                class="mt-3 w-full px-4 py-2 rounded-lg text-sm font-semibold border border-brand-200 dark:border-brand-500/30 text-brand-700 dark:text-brand-300 hover:bg-brand-50 dark:hover:bg-brand-500/10 transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                :disabled="gerandoCodigo"
+                @click="gerarCodigoAcesso"
+              >
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                {{ gerandoCodigo ? 'Gerando…' : 'Gerar código de acesso ao app' }}
+              </button>
             </section>
           </div>
 
@@ -205,6 +214,27 @@
       @close="abrirEdicao = false"
       @salvo="onSalvo"
     />
+
+    <!-- Modal: código de acesso ao app -->
+    <div v-if="codigoAcesso" class="fixed inset-0 z-[60] flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="codigoAcesso = null" />
+      <div class="relative w-full max-w-sm bg-white dark:bg-surface-elevated-dark rounded-2xl shadow-2xl p-6 text-center animate-fade-in">
+        <div class="mx-auto w-12 h-12 rounded-full bg-brand-50 dark:bg-brand-500/10 flex items-center justify-center mb-3">
+          <svg class="w-6 h-6 text-brand-600 dark:text-brand-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <h3 class="text-base font-bold text-slate-900 dark:text-white">Código de acesso ao app</h3>
+        <p class="text-3xl font-extrabold tracking-[0.3em] text-brand-700 dark:text-brand-300 my-4 select-all">{{ codigoAcesso }}</p>
+        <p class="text-sm text-slate-500 leading-relaxed">
+          Passe este código para o atleta. Vale 24h. Ele usa no app para criar a senha.
+        </p>
+        <button
+          class="mt-5 w-full px-4 py-2 rounded-lg text-sm font-semibold bg-slate-900 hover:bg-slate-800 text-white transition-colors"
+          @click="codigoAcesso = null"
+        >
+          Fechar
+        </button>
+      </div>
+    </div>
   </Teleport>
 </template>
 
@@ -217,11 +247,36 @@ const emit = defineEmits<{ (e: 'close'): void; (e: 'atualizado'): void }>()
 
 const atletasComp = useAtletas()
 const freqComp = useFrequencia()
+const supabase = useSupabaseClient()
+const toast = useToast()
 
 const aba = ref<'visao' | 'financeiro' | 'frequencia' | 'saude'>('visao')
 const presencaPct = ref<number | null>(null)
 const turmasVinculadas = ref<Turma[]>([])
 const abrirEdicao = ref(false)
+const gerandoCodigo = ref(false)
+const codigoAcesso = ref<string | null>(null)
+
+async function gerarCodigoAcesso() {
+  if (gerandoCodigo.value) return
+  gerandoCodigo.value = true
+  try {
+    const { data, error } = await supabase.rpc('app_gerar_codigo_acesso', {
+      p_atleta_id: props.atleta.id,
+    })
+    if (error) throw error
+    const res = data as { ok?: boolean; codigo?: string; erro?: string } | null
+    if (!res?.ok || !res.codigo) {
+      toast.error('Não foi possível gerar o código', res?.erro ?? 'Tente novamente.')
+      return
+    }
+    codigoAcesso.value = res.codigo
+  } catch (e: any) {
+    toast.error('Erro ao gerar código', e?.message ?? 'Tente novamente.')
+  } finally {
+    gerandoCodigo.value = false
+  }
+}
 
 const tabs = [
   { value: 'visao' as const, label: 'Visão geral' },
