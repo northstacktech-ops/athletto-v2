@@ -1,6 +1,7 @@
 import { defineEventHandler, createError, getMethod } from 'h3'
 import { getServiceClient, aplicarCorsApp, validarSessao } from '~~/server/utils/appAtleta'
 import { gerarOcorrenciasTreino, type TurmaAgenda } from '~~/server/utils/treinos'
+import { logEvento, erroParaLog } from '~~/server/utils/logger'
 
 /**
  * GET /api/app/agenda  (auth)
@@ -56,7 +57,7 @@ export default defineEventHandler(async (event) => {
   const { data: eventos, error } = await supabase
     .from('eventos_calendario')
     .select(
-      'id, titulo, descricao, tipo, data_inicio, data_fim, local, turma_id, turma_ids, atleta_ids',
+      'id, titulo, descricao, tipo, data_inicio, data_fim, turma_id, turma_ids, atleta_ids',
     )
     .eq('clube_id', sessao.clube_id)
     .gte('data_inicio', inicio.toISOString())
@@ -64,7 +65,7 @@ export default defineEventHandler(async (event) => {
     .order('data_inicio', { ascending: true })
 
   if (error) {
-    console.error('[app/agenda] erro:', error)
+    logEvento('error', 'app.agenda.erro', { atleta_id: sessao.atleta_id, clube_id: sessao.clube_id, erro: erroParaLog(error) })
     throw createError({ statusCode: 500, statusMessage: 'Falha ao buscar agenda.' })
   }
 
@@ -87,7 +88,7 @@ export default defineEventHandler(async (event) => {
       tipo: ev.tipo,
       data_inicio: ev.data_inicio,
       data_fim: ev.data_fim ?? null,
-      local: ev.local ?? null,
+      local: null,
     }))
 
   // 3) Mescla treinos + eventos e ordena por data_inicio asc
