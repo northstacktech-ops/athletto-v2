@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:lottie/lottie.dart';
 
 import '../services/api.dart';
 import '../services/session.dart';
@@ -24,11 +23,11 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Ícones escuros da status bar sobre o fundo lime.
+    // Fundo escuro: ícones claros na status bar.
     SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.dark,
-      statusBarBrightness: Brightness.light,
+      statusBarIconBrightness: Brightness.light,
+      statusBarBrightness: Brightness.dark,
     ));
     WidgetsBinding.instance.addPostFrameCallback((_) => _decidir());
   }
@@ -77,16 +76,15 @@ class _SplashScreenState extends State<SplashScreen> {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
-        statusBarBrightness: Brightness.light,
+        statusBarIconBrightness: Brightness.light,
+        statusBarBrightness: Brightness.dark,
       ),
       child: Scaffold(
-        backgroundColor: AppColors.lime,
+        backgroundColor: AppColors.ink,
         body: Center(
-          child: Lottie.asset(
-            'assets/athletto-splash.json',
-            width: MediaQuery.of(context).size.width * 0.9,
-            repeat: false,
+          child: Image.asset(
+            'assets/img/logo.png',
+            width: MediaQuery.of(context).size.width * 0.42,
             fit: BoxFit.contain,
           ),
         ),

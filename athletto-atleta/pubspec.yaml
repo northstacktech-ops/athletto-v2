@@ -16,6 +16,7 @@ dependencies:
   flutter:
     sdk: flutter
   http: ^1.2.0
+  http_parser: ^4.0.2
   flutter_secure_storage: ^9.2.2
   intl: ^0.19.0
   url_launcher: ^6.3.0
@@ -28,6 +29,16 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.14.1
+
+# Ícone do app: "A" preto sobre fundo lime (cor primária).
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/icon/icon.png"
+  adaptive_icon_background: "#C7EF66"
+  adaptive_icon_foreground: "assets/icon/foreground.png"
+  min_sdk_android: 21
 
 flutter:
   uses-material-design: true

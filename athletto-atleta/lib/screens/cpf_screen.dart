@@ -104,7 +104,7 @@ class _CpfScreenState extends State<CpfScreen> {
   @override
   Widget build(BuildContext context) {
     return AuthScaffold(
-      heroFraction: 0.40,
+      heroFraction: 0.50,
       sheet: Form(
         key: _formKey,
         child: Column(
@@ -207,8 +207,8 @@ class AuthScaffold extends StatelessWidget {
                           padding: EdgeInsets.only(top: topInset + 8),
                           child: Image.asset(
                             'assets/img/hero-runner.png',
-                            fit: BoxFit.contain,
-                            alignment: Alignment.bottomCenter,
+                            fit: BoxFit.cover,
+                            alignment: Alignment.topCenter,
                           ),
                         ),
                       ],
