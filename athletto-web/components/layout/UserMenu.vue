@@ -13,7 +13,7 @@
         class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0 overflow-hidden"
         :class="variant === 'sidebar' ? 'bg-white/15 text-white' : 'bg-slate-100 text-slate-700 dark:bg-white/15 dark:text-white'"
       >
-        <img v-if="gestor?.foto_url" :src="gestor.foto_url" class="w-full h-full object-cover" alt="" />
+        <NuxtImg v-if="gestor?.foto_url" :src="gestor.foto_url" width="72" height="72" format="webp" class="w-full h-full object-cover" alt="" />
         <span v-else>{{ iniciais }}</span>
       </div>
 

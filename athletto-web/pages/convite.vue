@@ -151,18 +151,20 @@ const aprovadas = computed(() => historico.value.filter((i) => i.status === 'apr
 const pendentes = computed(() => historico.value.filter((i) => i.status === 'pendente').length)
 const diasGanhos = computed(() => aprovadas.value * diasRecompensa.value)
 
-const linkUnico = computed(() => {
-  const slug = clube.value?.slug ?? 'seu-clube'
-  if (process.client) return `${window.location.origin}/r/${slug}`
-  return `https://athletto.com/r/${slug}`
-})
+// useRequestURL resolve a mesma origin no servidor e no client — evita
+// hydration mismatch (antes: SSR renderizava athletto.com, client window.origin).
+const requestUrl = useRequestURL()
+const linkUnico = computed(() => `${requestUrl.origin}/r/${clube.value?.slug ?? 'seu-clube'}`)
 
 async function carregar() {
-  const { data: c } = await cfgComp.buscar()
+  // Queries independentes em paralelo (evita waterfall: config → indicações)
+  const [{ data: c }, listaRes] = await Promise.all([
+    cfgComp.buscar(),
+    clube.value ? indicacoes.listar() : Promise.resolve({ data: null }),
+  ])
   cfg.value = c
   if (clube.value) {
-    const { data: lista } = await indicacoes.listar()
-    historico.value = (lista ?? []).filter((i) => i.clube_indicador_id === clube.value!.id)
+    historico.value = (listaRes.data ?? []).filter((i: Indicacao) => i.clube_indicador_id === clube.value!.id)
   }
 }
 onMounted(carregar)

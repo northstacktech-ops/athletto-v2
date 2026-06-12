@@ -7,10 +7,14 @@
       class="rounded-full w-full h-full flex items-center justify-center font-bold overflow-hidden"
       :style="!src ? `background-color: ${bgColor};` : undefined"
     >
-      <img
+      <NuxtImg
         v-if="src"
         :src="src"
         :alt="nome"
+        :width="pxSize"
+        :height="pxSize"
+        format="webp"
+        loading="lazy"
         class="w-full h-full object-cover"
       />
       <span v-else class="text-white select-none" :class="textSizeClass">{{ iniciais }}</span>
@@ -68,6 +72,11 @@ const sizeClasses = computed(() => ({
   lg: 'w-12 h-12',
   xl: 'w-16 h-16',
   '2xl': 'w-20 h-20',
+}[props.size]))
+
+// Tamanho pedido ao otimizador de imagem (2x o CSS, para telas retina).
+const pxSize = computed(() => ({
+  xs: 48, sm: 64, md: 80, lg: 96, xl: 128, '2xl': 160,
 }[props.size]))
 
 const textSizeClass = computed(() => ({

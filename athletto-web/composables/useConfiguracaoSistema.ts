@@ -4,10 +4,12 @@ export function useConfiguracaoSistema() {
   const supabase = useSupabaseClient()
 
   async function buscar(): Promise<{ data: ConfiguracaoSistema | null; error: Error | null }> {
+    // maybeSingle: a RLS só permite leitura por superadmin — para gestores a
+    // query retorna 0 linhas e `.single()` estourava 406 no console.
     const { data, error } = await supabase
       .from('configuracoes_sistema')
       .select('*')
-      .single()
+      .maybeSingle()
     return { data: data as ConfiguracaoSistema | null, error: error as Error | null }
   }
 

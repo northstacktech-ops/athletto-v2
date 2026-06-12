@@ -132,6 +132,7 @@ const tituloBanner = computed(() => {
   switch (motivo) {
     case 'suspensa':  return 'Conta suspensa'
     case 'cancelada': return 'Assinatura cancelada'
+    case 'upgrade':   return 'Faça upgrade do seu plano'
     default:          return 'Seu período de trial encerrou'
   }
 })
@@ -140,6 +141,7 @@ const subtituloBanner = computed(() => {
   switch (motivo) {
     case 'suspensa':  return 'Entre em contato com o suporte para reativar sua conta.'
     case 'cancelada': return 'Escolha um plano para voltar a usar o Athletto.'
+    case 'upgrade':   return 'Escolha o plano ideal para o seu clube.'
     default:          return 'Escolha um plano para continuar gerenciando seu clube.'
   }
 })
@@ -148,6 +150,7 @@ const bannerClass = computed(() => {
   switch (motivo) {
     case 'suspensa':  return 'bg-orange-50 text-orange-800 border-b border-orange-100'
     case 'cancelada': return 'bg-gray-100 text-gray-700 border-b border-gray-200'
+    case 'upgrade':   return 'bg-brand-50 text-brand-800 border-b border-brand-100'
     default:          return 'bg-amber-50 text-amber-800 border-b border-amber-100'
   }
 })

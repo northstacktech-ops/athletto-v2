@@ -178,15 +178,22 @@ function linkWhatsApp(cb: Cobranca) {
 
 async function marcarPago(id: string) {
   if (!window.confirm('Confirmar baixa manual desta cobrança?')) return
-  try {
-    const { error } = await fin.marcarComoPago(id)
-    if (error) throw error
-    toast.success('Cobrança marcada como paga')
-    emit('atualizado')
-    await carregar()
-  } catch (err: any) {
-    toast.error('Falha ao marcar pagamento', err?.message ?? '')
+
+  // Atualização otimista: muda o status na hora; reverte se o servidor falhar.
+  const estadoAnterior = todas.value.map((c) => ({ ...c }))
+  todas.value = todas.value.map((c) =>
+    c.id === id ? { ...c, status: 'pago' as const, data_pagamento: hoje } : c,
+  )
+  selecionadas.delete(id)
+
+  const { error } = await fin.marcarComoPago(id)
+  if (error) {
+    todas.value = estadoAnterior
+    toast.error('Falha ao marcar pagamento', (error as any)?.message ?? '')
+    return
   }
+  toast.success('Cobrança marcada como paga')
+  emit('atualizado')
 }
 
 async function regenerar(id: string) {
@@ -203,18 +210,28 @@ async function regenerar(id: string) {
 async function marcarPagasEmMassa() {
   if (selecionadas.size === 0) return
   if (!window.confirm(`Marcar ${selecionadas.size} cobrança(s) como pagas?`)) return
-  try {
-    for (const id of selecionadas) {
-      const { error } = await fin.marcarComoPago(id)
-      if (error) throw error
-    }
-    toast.success(`${selecionadas.size} cobrança(s) marcadas como pagas`)
-    selecionadas.clear()
-    emit('atualizado')
-    await carregar()
-  } catch (err: any) {
-    toast.error('Falha ao processar cobranças', err?.message ?? '')
+
+  // Otimista + paralelo (antes: loop sequencial com await + reload completo).
+  const ids = [...selecionadas]
+  const estadoAnterior = todas.value.map((c) => ({ ...c }))
+  todas.value = todas.value.map((c) =>
+    ids.includes(c.id) ? { ...c, status: 'pago' as const, data_pagamento: hoje } : c,
+  )
+  selecionadas.clear()
+
+  const resultados = await Promise.allSettled(ids.map((id) => fin.marcarComoPago(id)))
+  const falhas = resultados.filter(
+    (r) => r.status === 'rejected' || (r.status === 'fulfilled' && r.value.error),
+  ).length
+
+  if (falhas > 0) {
+    todas.value = estadoAnterior
+    await carregar() // estado real do servidor (algumas podem ter sido pagas)
+    toast.error(`Falha em ${falhas} de ${ids.length} cobrança(s)`, 'A lista foi recarregada.')
+  } else {
+    toast.success(`${ids.length} cobrança(s) marcadas como pagas`)
   }
+  emit('atualizado')
 }
 
 function enviarLembretesEmMassa() {

@@ -51,7 +51,13 @@ const hashToTab: Record<string, TabValue> = {
   '#caixinhas': 'caixinhas', '#pendentes': 'pendentes',
 }
 
-const aba = ref<TabValue>(hashToTab[route.hash] ?? 'dashboard')
+// O hash (#caixinhas) nunca chega ao servidor: o SSR sempre renderiza 'dashboard'.
+// Iniciar pelo hash direto causava hydration mismatch — sincronizamos no onMounted.
+const aba = ref<TabValue>('dashboard')
+onMounted(() => {
+  const fromHash = hashToTab[route.hash]
+  if (fromHash) aba.value = fromHash
+})
 watch(aba, (v) => router.replace({ hash: `#${v}` }))
 
 const atrasoCount = ref(0)
@@ -74,9 +80,10 @@ function onModalSalvo(fechar: () => void) {
 }
 
 async function recarregarBadge() {
-  const { data } = await fin.listarCobranças({ status: 'pendente' })
-  const hoje = new Date().toISOString().slice(0, 10)
-  atrasoCount.value = (data ?? []).filter((c) => c.data_vencimento < hoje).length
+  // Antes buscava TODAS as cobranças pendentes (com join de atleta/caixinha)
+  // só para contar — agora o banco devolve apenas o número.
+  const { count } = await fin.contarCobrancasAtrasadas()
+  atrasoCount.value = count
 }
 onMounted(recarregarBadge)
 </script>

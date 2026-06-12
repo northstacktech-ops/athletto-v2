@@ -10,7 +10,7 @@
       </div>
       <div v-else class="bg-white dark:bg-surface-elevated-dark rounded-2xl p-6 mb-6 text-center">
         <div class="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center overflow-hidden bg-gray-100 dark:bg-white/[0.05]">
-          <img v-if="clube.logo_url" :src="clube.logo_url" alt="Logo" class="w-full h-full object-cover"/>
+          <NuxtImg v-if="clube.logo_url" :src="clube.logo_url" alt="Logo" width="128" height="128" format="webp" class="w-full h-full object-cover"/>
           <span v-else class="text-2xl font-extrabold" style="color: #3d5afe;">{{ iniciais }}</span>
         </div>
         <h1 class="text-xl font-extrabold text-gray-900 dark:text-white mt-3">{{ clube.nome }}</h1>

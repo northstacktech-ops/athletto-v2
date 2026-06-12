@@ -95,14 +95,18 @@ export function useFrequencia() {
   }
 
   async function listarAlertas(incluir_dispensados = false) {
+    // Select enxuto (a UI usa nome/telefone do atleta e nome da turma) + limite —
+    // antes trazia atletas(*) e turmas(*) inteiros, sem teto de linhas.
     let query = supabase
       .from('alertas_evasao')
-      .select('*, atleta:atletas(*), turma:turmas(*)')
+      .select('*, atleta:atletas(id, nome, apelido, foto_url, telefone_responsavel), turma:turmas(id, nome)')
       .eq('clube_id', getClubId())
 
     if (!incluir_dispensados) query = query.eq('dispensado', false)
 
-    const { data, error } = await query.order('data_deteccao', { ascending: false })
+    const { data, error } = await query
+      .order('data_deteccao', { ascending: false })
+      .limit(100)
     return { data: data as AlertaEvasao[] | null, error }
   }
 

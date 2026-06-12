@@ -87,7 +87,7 @@
         title="Expandir menu"
         @click="$emit('toggle')"
       >
-        <img v-if="gestor?.foto_url" :src="gestor.foto_url" class="w-full h-full object-cover rounded-full" />
+        <NuxtImg v-if="gestor?.foto_url" :src="gestor.foto_url" width="80" height="80" format="webp" class="w-full h-full object-cover rounded-full" />
         <span v-else>{{ gestorIniciais }}</span>
       </button>
     </div>

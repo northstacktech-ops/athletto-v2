@@ -194,6 +194,20 @@ export function useFinanceiro() {
     return { data: data as Cobranca[] | null, error }
   }
 
+  async function contarCobrancasAtrasadas() {
+    // Contagem no servidor (head: true) — não transfere linhas nem JOINs,
+    // só o count. Usado pelo badge "Pendentes" do Financeiro.
+    const hoje = new Date().toISOString().slice(0, 10)
+    const { count, error } = await supabase
+      .from('cobrancas')
+      .select('id', { count: 'exact', head: true })
+      .eq('clube_id', getClubId())
+      .eq('status', 'pendente')
+      .lt('data_vencimento', hoje)
+
+    return { count: count ?? 0, error }
+  }
+
   async function marcarComoPago(id: string) {
     const { error } = await supabase.rpc('marcar_cobranca_paga', {
       p_cobranca_id: id,
@@ -226,6 +240,8 @@ export function useFinanceiro() {
     de?: string
     ate?: string
     caixinha_id?: string
+    /** Teto de linhas (ex.: extrato usa 500). Sem valor = sem teto (agregações do dashboard). */
+    limite?: number
   }) {
     let query = supabase
       .from('transacoes')
@@ -237,7 +253,10 @@ export function useFinanceiro() {
     if (filtros?.ate) query = query.lte('data', filtros.ate)
     if (filtros?.caixinha_id) query = query.eq('caixinha_id', filtros.caixinha_id)
 
-    const { data, error } = await query.order('data', { ascending: false })
+    query = query.order('data', { ascending: false })
+    if (filtros?.limite != null) query = query.limit(filtros.limite)
+
+    const { data, error } = await query
     return { data: data as Transacao[] | null, error }
   }
 
@@ -313,6 +332,7 @@ export function useFinanceiro() {
     buscarCaixinha,
     encerrarCaixinha,
     listarCobranças,
+    contarCobrancasAtrasadas,
     marcarComoPago,
     regenerarLink,
     listarTransacoes,

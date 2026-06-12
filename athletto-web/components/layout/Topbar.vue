@@ -16,10 +16,13 @@
 
     <!-- LEFT — Club logo or fallback icon + name -->
     <NuxtLink to="/" class="hidden lg:flex items-center gap-2 shrink-0 group">
-      <img
+      <NuxtImg
         v-if="logoUrl"
         :src="logoUrl"
         :alt="nomeClube"
+        width="56"
+        height="56"
+        format="webp"
         class="w-7 h-7 rounded-md object-cover bg-slate-100 dark:bg-white/10 shrink-0 ring-1 ring-slate-200 dark:ring-white/10"
         @error="onLogoError"
       />
@@ -113,15 +116,19 @@ const { clube } = useAuth()
 const { isDark, toggle: toggleTheme } = useTheme()
 const { show: openCmdK } = useCommandPalette()
 
-const nomeClube = computed(() => {
-  if (process.client) {
+// localStorage só depois do mount — ler direto no computed fazia o HTML do
+// client divergir do SSR (hydration mismatch).
+const savedNomeClube = ref<string | null>(null)
+onMounted(() => {
+  try {
     const saved = localStorage.getItem('athletto_clube_data')
-    if (saved) {
-      try { return JSON.parse(saved).nomeClube || clube.value?.nome || 'Athletto' } catch {}
-    }
-  }
-  return clube.value?.nome || 'Athletto'
+    if (saved) savedNomeClube.value = JSON.parse(saved).nomeClube ?? null
+  } catch {}
 })
+
+const nomeClube = computed(() =>
+  savedNomeClube.value || clube.value?.nome || 'Athletto',
+)
 
 const logoLoadFailed = ref(false)
 const logoUrl = computed(() => {
@@ -137,7 +144,10 @@ watch(() => clube.value?.logo_url, () => {
   logoLoadFailed.value = false
 })
 
-const isMac = computed(() =>
-  process.client && /Mac|iPod|iPhone|iPad/.test(navigator.platform),
-)
+// Detectado após o mount pelo mesmo motivo (SSR renderizava "Ctrl" e o client
+// "⌘" em Macs — hydration mismatch).
+const isMac = ref(false)
+onMounted(() => {
+  isMac.value = /Mac|iPod|iPhone|iPad/.test(navigator.platform)
+})
 </script>

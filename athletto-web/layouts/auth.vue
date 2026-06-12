@@ -32,8 +32,9 @@
 
     <!-- ══ RIGHT — Sports image panel ═══════════════════════════════════ -->
     <div class="hidden lg:block lg:w-[42%] xl:w-[46%] relative overflow-hidden">
+      <!-- Parâmetros do CDN da Pexels: comprime e redimensiona (antes baixava o original com vários MB) -->
       <img
-        src="https://images.pexels.com/photos/26283685/pexels-photo-26283685.jpeg"
+        src="https://images.pexels.com/photos/26283685/pexels-photo-26283685.jpeg?auto=compress&cs=tinysrgb&w=1400"
         alt=""
         class="absolute inset-0 w-full h-full object-cover object-[center_60%]"
         aria-hidden="true"

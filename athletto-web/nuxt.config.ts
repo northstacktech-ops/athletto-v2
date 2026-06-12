@@ -31,6 +31,12 @@ export default defineNuxtConfig({
     preset: 'vercel',
   },
 
+  /** Páginas públicas 100% estáticas servidas do CDN — sem SSR nem cold start. */
+  routeRules: {
+    '/termos': { prerender: true },
+    '/privacidade': { prerender: true },
+  },
+
   devServer: {
     port: 4000,
     /** Se 4000 estiver ocupada, falha com erro em vez de usar outra porta (evita confusão com localhost:4000 recusando). */
@@ -40,7 +46,16 @@ export default defineNuxtConfig({
   modules: [
     '@nuxtjs/tailwindcss',
     '@nuxtjs/supabase',
+    '@nuxt/image',
   ],
+
+  /** Otimização de imagens (fotos de atletas/gestores e logos no Supabase Storage). */
+  image: {
+    domains: [
+      ...(supabasePublicUrl ? [new URL(supabasePublicUrl).host] : []),
+      'images.pexels.com',
+    ],
+  },
 
   supabase: {
     redirect: false,

@@ -17,7 +17,6 @@
 const { isTrial, daysLeft } = useTrial()
 
 function goToUpgrade() {
-  // Placeholder: navegar pra página de upgrade (TODO)
-  navigateTo('/configuracoes')
+  navigateTo('/upgrade?motivo=upgrade')
 }
 </script>

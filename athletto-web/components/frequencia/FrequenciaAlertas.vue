@@ -112,14 +112,19 @@ function linkWhatsApp(al: AlertaEvasao) {
 }
 
 async function dispensar(id: string) {
-  try {
-    const { error } = await freqComp.dispensarAlerta(id)
-    if (error) throw error
-    toast.success('Alerta dispensado', 'O atleta não aparecerá mais nos alertas ativos.')
-    emit('atualizado')
-    await carregar()
-  } catch (err: any) {
-    toast.error('Falha ao dispensar alerta', err?.message ?? '')
+  // Atualização otimista: a UI responde na hora; reverte se o servidor falhar.
+  const estadoAnterior = todos.value.map((a) => ({ ...a }))
+  todos.value = todos.value.map((a) =>
+    a.id === id ? { ...a, dispensado: true, dispensado_em: new Date().toISOString() } : a,
+  )
+
+  const { error } = await freqComp.dispensarAlerta(id)
+  if (error) {
+    todos.value = estadoAnterior
+    toast.error('Falha ao dispensar alerta', error.message ?? '')
+    return
   }
+  toast.success('Alerta dispensado', 'O atleta não aparecerá mais nos alertas ativos.')
+  emit('atualizado')
 }
 </script>

@@ -94,7 +94,7 @@
 
         <!-- Passo 2: Selecionar turmas -->
         <div v-else-if="passo === 2" class="px-6 py-5 overflow-y-auto space-y-3">
-          <p class="text-sm text-gray-500">Selecione as turmas. Todos os atletas ativos de cada turma serão vinculados automaticamente com o valor da mensalidade da turma como ponto de partida.</p>
+          <p class="text-sm text-gray-500">Selecione as turmas. Todos os atletas ativos de cada turma serão vinculados automaticamente com o valor padrão do planejamento (etapa 1) como ponto de partida.</p>
 
           <div v-if="loadingTurmas" class="space-y-2">
             <div v-for="i in 4" :key="i" class="skeleton h-14 rounded-lg"/>
@@ -159,8 +159,7 @@
                   </span>
                 </div>
                 <p v-if="!item.isento" class="text-xs text-gray-400 mt-0.5">
-                  {{ item.valorAtleta !== null && item.valorAtleta > 0 ? 'Taxa pessoal' : 'Base turma' }}:
-                  R$ {{ (item.valorAtleta !== null && item.valorAtleta > 0 ? item.valorAtleta : item.valorTurma).toFixed(2) }}
+                  Base planejamento: R$ {{ form.valor.toFixed(2) }}<span v-if="item.valorAtleta !== null && item.valorAtleta > 0"> · Taxa pessoal: R$ {{ item.valorAtleta.toFixed(2) }}</span>
                 </p>
                 <p v-else class="text-xs text-amber-500 font-semibold mt-0.5">Isento — sem cobrança</p>
               </div>
@@ -184,7 +183,7 @@
                   type="number" min="0" step="0.01"
                   :disabled="item.isento"
                   class="form-input pl-7 text-sm py-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
-                  :class="item.valorCustom !== (item.valorAtleta ?? item.valorTurma) && !item.isento ? 'border-brand-400 ring-1 ring-brand-400/20' : ''"
+                  :class="item.valorCustom !== form.valor && !item.isento ? 'border-brand-400 ring-1 ring-brand-400/20' : ''"
                 />
               </div>
             </div>
@@ -247,8 +246,7 @@ type AtletaRevisao = {
   atleta_id: string
   nome: string
   turma_id: string
-  valorTurma: number        // valor padrão da turma
-  valorAtleta: number | null // valor_mensalidade do atleta (null = usa turma)
+  valorAtleta: number | null // valor_mensalidade do atleta (apenas informativo)
   valorCustom: number        // valor efetivo para este planejamento
   isento: boolean
 }
@@ -279,7 +277,10 @@ function atletasDaTurma(turmaId: string): Atleta[] {
 
 // ── Sincronizar lista de revisão ao marcar/desmarcar turma ───────────────────
 async function sincronizarAtletasDaTurma(turma: Turma) {
-  const valorBase = turma.valor_mensalidade_padrao ?? form.valor
+  // A base é SEMPRE o "Valor padrão por atleta" da etapa 1 (valor do planejamento).
+  // Taxa pessoal/bolsa do atleta aparecem apenas como informação; ajustes são
+  // manuais na revisão. (Antes a mensalidade da turma sobrescrevia a etapa 1.)
+  const valorBase = form.valor
 
   if (form.turmaIds.includes(turma.id)) {
     // Carrega atletas da turma via composable (pega novos vínculos também)
@@ -291,15 +292,13 @@ async function sincronizarAtletasDaTurma(turma: Turma) {
     for (const atleta of atletasDaTurmaAtual) {
       if (!atletasRevisao.value.some((a) => a.atleta_id === atleta.id)) {
         const valorAtleta = atleta.valor_mensalidade ?? null
-        const valorCustom = valorAtleta !== null ? valorAtleta : valorBase
         atletasRevisao.value.push({
           atleta_id: atleta.id,
           nome: atleta.nome,
           turma_id: turma.id,
-          valorTurma: valorBase,
           valorAtleta,
-          valorCustom,
-          isento: valorAtleta === 0,
+          valorCustom: valorBase,
+          isento: false,
         })
       }
     }
@@ -307,6 +306,14 @@ async function sincronizarAtletasDaTurma(turma: Turma) {
     atletasRevisao.value = atletasRevisao.value.filter((a) => a.turma_id !== turma.id)
   }
 }
+
+// Se o gestor voltar à etapa 1 e mudar o valor base, atualiza os atletas que
+// ainda estavam no valor padrão (preserva ajustes manuais feitos na revisão).
+watch(() => form.valor, (novo, antigo) => {
+  for (const a of atletasRevisao.value) {
+    if (a.valorCustom === antigo) a.valorCustom = novo
+  }
+})
 
 function nomeDaTurma(id: string) {
   return turmasList.value.find((t) => t.id === id)?.nome ?? id
@@ -353,9 +360,11 @@ async function salvarComo(estadoInicial: 'inativo' | 'ativo') {
     // Vincula TODOS os atletas (inclusive isentos). A RPC ativar_planejamento
     // pula isento=true ao gerar cobranças, então registrar o isento é correto.
     const atletaIds = atletasRevisao.value.map((a) => a.atleta_id)
+    // valor_customizado só quando difere do valor base do planejamento —
+    // o banco gera a cobrança com coalesce(valor_customizado, planejamento.valor).
     const customizacoes = atletasRevisao.value.map((a) => ({
       atleta_id: a.atleta_id,
-      valor_customizado: a.valorCustom !== (a.valorAtleta ?? a.valorTurma) ? a.valorCustom : null,
+      valor_customizado: a.valorCustom !== form.valor ? a.valorCustom : null,
       isento: a.isento,
     }))
 
@@ -364,7 +373,10 @@ async function salvarComo(estadoInicial: 'inativo' | 'ativo') {
     }
 
     if (estadoInicial === 'ativo') {
-      await fin.ativarPlanejamento(planej.id)
+      // Sem essa checagem, uma falha na ativação mostrava "sucesso" e a
+      // caixinha nunca aparecia (o planejamento ficava como rascunho invisível).
+      const { error: ativarErr } = await fin.ativarPlanejamento(planej.id)
+      if (ativarErr) throw ativarErr
       const isentos = atletasRevisao.value.filter((a) => a.isento).length
       const cobrados = atletaIds.length - isentos
       toast.success(

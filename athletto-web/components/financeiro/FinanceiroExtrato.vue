@@ -149,15 +149,16 @@ async function carregar() {
     de: de.value || undefined,
     ate: ate.value || undefined,
     caixinha_id: filtroCaixinha.value || undefined,
+    limite: 500,
   })
   transacoes.value = data ?? []
   loading.value = false
 }
 
 onMounted(async () => {
-  const { data } = await fin.listarCaixinhas()
+  // Caixinhas e transações são independentes — carrega em paralelo (sem waterfall)
+  const [{ data }] = await Promise.all([fin.listarCaixinhas(), carregar()])
   caixinhas.value = data ?? []
-  await carregar()
 })
 
 watch([filtroTipo, filtroCaixinha, de, ate], (vals, oldVals) => {

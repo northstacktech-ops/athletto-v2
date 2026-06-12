@@ -73,6 +73,7 @@
     </div>
 
     <BrandImageCropperModal
+      v-if="modalOpen"
       :open="modalOpen"
       :title="label"
       :circle="shape === 'circle'"
@@ -108,6 +109,12 @@ const emit = defineEmits<{
   (e: 'confirm', file: File): void
   (e: 'remove'): void
 }>()
+
+// Carrega o modal (e o vue-advanced-cropper, ~pesado) apenas quando o gestor
+// abre o recorte — fora do bundle inicial da página (manual de performance, Prob. 7).
+const BrandImageCropperModal = defineAsyncComponent(
+  () => import('~/components/brand/ImageCropperModal.vue'),
+)
 
 const modalOpen = ref(false)
 
