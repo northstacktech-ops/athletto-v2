@@ -1,0 +1,35 @@
+{
+  "name": "athletto-web",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20.x"
+  },
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev --port 4000",
+    "supabase:sync-auth": "node scripts/sync-supabase-auth.mjs",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "@nuxt/image": "^1.8.0",
+    "@nuxtjs/supabase": "^1.4.6",
+    "@sentry/nuxt": "^9.0.0",
+    "@supabase/supabase-js": "^2.49.4",
+    "echarts": "^6.0.0",
+    "nuxt": "^3.16.0",
+    "preline": "^4.2.0",
+    "vue": "^3.5.13",
+    "vue-advanced-cropper": "^2.8.9",
+    "vue-echarts": "^8.0.1",
+    "vue-router": "^4.5.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@nuxtjs/tailwindcss": "^6.12.2",
+    "@types/node": "^22.14.0",
+    "typescript": "^5.8.3"
+  }
+}

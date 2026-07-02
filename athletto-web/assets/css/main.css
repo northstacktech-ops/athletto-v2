@@ -1,0 +1,193 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-surface-canvas text-gray-900 dark:bg-surface-canvas-dark dark:text-gray-100;
+    /* Tipografia base mais legível (gestor olha telas densas) */
+    font-size: 15px;
+    line-height: 1.55;
+    letter-spacing: -0.005em;
+  }
+
+  input, textarea, select, button, optgroup, option, kbd {
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    letter-spacing: inherit;
+  }
+
+  /* Selects nativos: aparência uniforme com a mesma paddings dos inputs */
+  select {
+    appearance: none;
+    -webkit-appearance: none;
+    padding-right: 2.25rem; /* espaço para o ícone de seta */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.65rem center;
+    background-size: 14px 14px;
+  }
+
+  /* Inputs e selects: alinhamento vertical consistente */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  select,
+  textarea {
+    vertical-align: middle;
+  }
+
+  /* Selection */
+  ::selection {
+    @apply bg-brand-600/20 text-brand-900 dark:text-brand-100;
+  }
+}
+
+/* ── Scrollbar ──────────────────────────────────────────────── */
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Slim scrollbar para áreas internas */
+.scrollbar-slim::-webkit-scrollbar { width: 6px; height: 6px; }
+.scrollbar-slim::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-slim::-webkit-scrollbar-thumb { @apply bg-gray-300 dark:bg-gray-700 rounded-full; }
+.scrollbar-slim::-webkit-scrollbar-thumb:hover { @apply bg-gray-400 dark:bg-gray-600; }
+
+@layer components {
+  /* ── Auth field ─────────────────────────────────────────────── */
+  .auth-input {
+    @apply py-2.5 px-4 block w-full border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400
+           bg-white transition-all duration-150 outline-none
+           focus:border-brand-500 focus:ring-2 focus:ring-brand-600/10
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .auth-label {
+    @apply block text-sm font-semibold text-gray-700 mb-1;
+  }
+
+  /* ── Solid (primary) ───────────────────────────────────────── */
+  .btn-primary {
+    @apply py-2.5 px-4 w-full inline-flex items-center justify-center gap-x-2
+           text-sm font-medium rounded-lg
+           bg-brand-600 border border-brand-700 text-white
+           hover:bg-brand-700
+           focus:outline-none focus:bg-brand-700
+           disabled:opacity-50 disabled:pointer-events-none
+           transition-colors;
+  }
+
+  /* ── White / outline ───────────────────────────────────────── */
+  .btn-ghost {
+    @apply py-2.5 px-4 w-full inline-flex items-center justify-center gap-x-2
+           text-sm font-medium rounded-lg
+           border border-gray-200 bg-white text-gray-700
+           hover:bg-gray-50
+           focus:outline-none focus:bg-gray-50
+           disabled:opacity-50 disabled:pointer-events-none
+           transition-colors;
+  }
+
+  /* ── OTP input ──────────────────────────────────────────────── */
+  .otp-box {
+    @apply w-12 h-14 text-center text-xl font-bold border border-gray-200 rounded-xl
+           bg-white text-gray-900 outline-none transition-all duration-150
+           focus:border-brand-500 focus:ring-2 focus:ring-brand-600/10;
+  }
+
+  .otp-box.filled {
+    @apply border-brand-400 bg-brand-50 text-brand-700;
+  }
+
+  /* ── Password strength ──────────────────────────────────────── */
+  .strength-bar {
+    @apply h-1 rounded-full flex-1 transition-all duration-300;
+  }
+
+  /* ── Sidebar item legacy (manter compat) ────────────────────── */
+  .sidebar-item {
+    @apply flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors;
+  }
+
+  /* ── Card semântico ─────────────────────────────────────────── */
+  .card {
+    @apply bg-white dark:bg-surface-elevated-dark
+           rounded-xl border border-slate-200 dark:border-white/[0.06] shadow-card
+           transition-colors;
+  }
+
+  /* ── Skeleton loader ────────────────────────────────────────── */
+  .skeleton {
+    @apply animate-pulse-soft rounded-md bg-gray-200/70 dark:bg-white/[0.06];
+  }
+
+  /* ── Section labels ─────────────────────────────────────────── */
+  .section-label {
+    @apply text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400;
+  }
+
+  /* ── Page title ─────────────────────────────────────────────── */
+  .page-title {
+    @apply text-2xl sm:text-[28px] font-bold text-slate-900 dark:text-white tracking-tight leading-tight;
+  }
+  .page-description {
+    @apply text-sm text-slate-500 dark:text-slate-400 mt-1;
+  }
+
+  /* ── Card padrão (mais respirável) ─────────────────────────── */
+  .card-base {
+    @apply bg-white dark:bg-surface-elevated-dark rounded-xl border border-slate-200 dark:border-white/[0.08];
+  }
+  .card-header {
+    @apply flex items-center gap-3 px-5 py-4 border-b border-slate-100 dark:border-white/[0.06];
+  }
+  .card-title {
+    @apply text-base font-bold text-ink dark:text-white;
+  }
+  .card-subtitle {
+    @apply text-sm text-slate-500 dark:text-slate-400 mt-0.5;
+  }
+
+  /* ── Form inputs (padronizado) ─────────────────────────────── */
+  .input-base {
+    @apply w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-white/[0.10]
+           bg-white dark:bg-surface-canvas-dark text-sm text-slate-900 dark:text-white
+           focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-600/15
+           placeholder:text-slate-400 transition-all;
+  }
+
+  /* ── form-input global (garante que utilitários pl-* e pr-* sobrescrevam) */
+  .form-input {
+    @apply w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-white/[0.10]
+           bg-white dark:bg-surface-canvas-dark text-sm text-slate-900 dark:text-white
+           placeholder:text-slate-400
+           focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-600/10
+           disabled:opacity-60 disabled:cursor-not-allowed
+           transition-all;
+  }
+}
+
+@layer utilities {
+  /* Stagger animations para listas */
+  .stagger > * {
+    animation: fade-up 0.35s ease-out both;
+  }
+  .stagger > *:nth-child(1) { animation-delay: 0.00s; }
+  .stagger > *:nth-child(2) { animation-delay: 0.05s; }
+  .stagger > *:nth-child(3) { animation-delay: 0.10s; }
+  .stagger > *:nth-child(4) { animation-delay: 0.15s; }
+  .stagger > *:nth-child(5) { animation-delay: 0.20s; }
+  .stagger > *:nth-child(6) { animation-delay: 0.25s; }
+}

@@ -1,0 +1,16 @@
+# Segredos / ambiente — NUNCA commitar (contém SUPABASE_SERVICE_ROLE_KEY etc.)
+.env
+.env.*
+!.env.example
+
+# Dependências e artefatos de build do Nuxt/Nitro
+node_modules
+.nuxt
+.output
+.data
+dist
+
+# Vercel / logs / SO
+.vercel
+*.log
+.DS_Store
