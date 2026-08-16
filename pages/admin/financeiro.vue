@@ -140,11 +140,16 @@ const abrirManual = ref(false)
 
 const resumo = ref({ receita: 0, taxas: 0, reembolsos: 0, despesas: 0, liquido: 0 })
 
+function ultimoDiaDoMes(referencia: string) {
+  const [ano, mesNum] = referencia.split('-').map(Number)
+  return new Date(Date.UTC(ano, mesNum, 0)).toISOString().slice(0, 10)
+}
+
 async function carregar() {
   loading.value = true
   const { data } = await adminFin.listarMovimentacoes({
     desde: `${mes.value}-01`,
-    ate: `${mes.value}-31`,
+    ate: ultimoDiaDoMes(mes.value),
   })
   todas.value = data ?? []
   resumo.value = await adminFin.resumoFinanceiro(mes.value)

@@ -6,11 +6,14 @@ export function useAssinaturas() {
   async function listar(filtros?: { status?: AssinaturaStatus; plano?: Clube['plano'] }) {
     let query = supabase
       .from('assinaturas')
-      .select('*, clube:clube_id(id, nome, slug, logo_url, plano)')
+      .select('*, clube:clube_id(id, nome, slug, logo_url, plano, conta_demonstracao)')
     if (filtros?.status) query = query.eq('status', filtros.status)
     if (filtros?.plano) query = query.eq('plano', filtros.plano)
     const { data, error } = await query.order('criado_em', { ascending: false })
-    return { data: data as Assinatura[] | null, error }
+    // Usado só pelo painel admin — conta de demonstração não conta nas
+    // métricas/lista de assinaturas reais.
+    const filtrado = (data ?? []).filter((a: any) => !a.clube?.conta_demonstracao)
+    return { data: filtrado as Assinatura[] | null, error }
   }
 
   async function buscarPorClube(clubeId: string) {

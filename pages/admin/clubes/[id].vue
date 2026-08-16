@@ -19,6 +19,9 @@
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2 flex-wrap">
               <h1 class="page-title">{{ clube.nome }}</h1>
+              <span v-if="clube.conta_demonstracao" class="px-2 py-0.5 rounded-md text-xs font-bold uppercase tracking-wide bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-300">
+                Demonstração
+              </span>
               <span class="px-2 py-0.5 rounded-md text-xs font-semibold capitalize" :class="planoBadge(clube.plano)">{{ nomePlano(clube.plano) }}</span>
               <span class="inline-flex items-center gap-1.5 text-xs font-medium" :class="statusTexto">
                 <span class="w-1.5 h-1.5 rounded-full" :class="statusDot"/>
@@ -92,6 +95,9 @@
 
       <!-- ── Assinatura ──────────────────────────────────────── -->
       <div class="card-base p-5">
+        <p v-if="clube.conta_demonstracao" class="mb-3 text-xs text-violet-700 dark:text-violet-300 bg-violet-50 dark:bg-violet-500/10 rounded-lg px-3 py-2">
+          Conta de demonstração — este MRR/plano não entra nas métricas financeiras do painel (Visão geral, Assinaturas, Financeiro do sistema).
+        </p>
         <div class="flex items-center justify-between mb-4">
           <h2 class="card-title">Assinatura</h2>
 
@@ -206,7 +212,6 @@ const id = computed(() => route.params.id as string)
 
 const adminClubes = useAdminClubes()
 const vouchers = useVouchers()
-const auditoria = useAuditoria()
 const toast = useToast()
 
 const loading = ref(true)
@@ -295,12 +300,8 @@ async function salvarPlano() {
   try {
     const { error } = await adminClubes.alterarPlano(clube.value.id, novoPlano.value)
     if (error) throw error
-    await auditoria.registrar({
-      acao: 'plano_alterado',
-      entidade: 'clube',
-      entidade_id: clube.value.id,
-      detalhes: { de: clube.value.plano, para: novoPlano.value },
-    })
+    // A RPC alterar_plano_clube já registra o log de auditoria sozinha
+    // (via auth.uid()) — chamar de novo aqui duplicava a linha.
     toast.success('Plano alterado', `Clube migrado para ${novoPlano.value}.`)
     await carregar()
   } catch (err: any) {
@@ -316,12 +317,7 @@ async function confirmarSuspender() {
   const motivo = window.prompt('Motivo da suspensão:')
   if (!motivo) return
   await adminClubes.suspender(clube.value.id, motivo)
-  await auditoria.registrar({
-    acao: 'clube_suspenso',
-    entidade: 'clube',
-    entidade_id: clube.value.id,
-    detalhes: { motivo },
-  })
+  // A RPC suspender_clube já registra o log de auditoria sozinha.
   toast.success('Clube suspenso')
   await carregar()
 }
@@ -329,11 +325,7 @@ async function confirmarSuspender() {
 async function reativar() {
   if (!clube.value) return
   await adminClubes.reativar(clube.value.id)
-  await auditoria.registrar({
-    acao: 'clube_reativado',
-    entidade: 'clube',
-    entidade_id: clube.value.id,
-  })
+  // A RPC reativar_clube já registra o log de auditoria sozinha.
   toast.success('Clube reativado')
   await carregar()
 }

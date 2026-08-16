@@ -20,7 +20,7 @@ export function useIndicacoes() {
         aprovada_em: new Date().toISOString(),
       })
       .eq('id', id)
-      .select()
+      .select('*, indicador:clube_indicador_id(id, nome, slug, logo_url), indicado:clube_indicado_id(id, nome, slug, logo_url)')
       .single()
     return { data, error }
   }

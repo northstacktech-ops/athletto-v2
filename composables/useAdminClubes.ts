@@ -16,20 +16,40 @@ export function useAdminClubes() {
       query = query.or(`nome.ilike.%${filtros.busca}%,slug.ilike.%${filtros.busca}%`)
     }
     const { data, error } = await query.order('criado_em', { ascending: false })
-    const normalizado = (data ?? []).map((c: any) => ({
+    let normalizado = (data ?? []).map((c: any) => ({
       ...c,
       assinatura: Array.isArray(c.assinatura) ? c.assinatura[0] ?? null : c.assinatura ?? null,
     }))
+    // status vive na assinatura embutida — filtrar aqui em vez de na query
+    // (embed sem !inner não filtra do jeito esperado no PostgREST).
+    if (filtros?.status) {
+      normalizado = normalizado.filter((c) => c.assinatura?.status === filtros.status)
+    }
     return { data: normalizado, error }
   }
 
   async function buscarPorId(id: string) {
     const { data, error } = await supabase
       .from('clubes')
-      .select('*, assinatura:assinaturas(id, status, plano, trial_inicio, trial_fim, proxima_cobranca, valor_mensal), gestores(id), atletas(count)')
+      .select('*, assinatura:assinaturas(id, status, plano, trial_inicio, trial_fim, proxima_cobranca, valor_mensal), gestores(id), atletas(id)')
       .eq('id', id)
       .single()
-    return { data, error }
+    if (error || !data) return { data: null, error }
+
+    // A página espera { clube, assinatura, gestores, atletas } separados —
+    // o select acima traz tudo embutido num único objeto (e `assinatura`
+    // pode vir como array de 1 item ou objeto, dependendo de como o
+    // PostgREST resolve a relação).
+    const { assinatura, gestores, atletas, ...clube } = data as any
+    return {
+      data: {
+        clube,
+        assinatura: (Array.isArray(assinatura) ? assinatura[0] : assinatura) ?? null,
+        gestores: gestores ?? [],
+        atletas: atletas ?? [],
+      },
+      error: null,
+    }
   }
 
   async function suspender(id: string, motivo: string) {

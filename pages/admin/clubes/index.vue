@@ -77,7 +77,12 @@
                     {{ getIniciais(c.nome) }}
                   </div>
                   <div class="min-w-0">
-                    <p class="font-semibold text-slate-900 dark:text-white truncate">{{ c.nome }}</p>
+                    <div class="flex items-center gap-1.5">
+                      <p class="font-semibold text-slate-900 dark:text-white truncate">{{ c.nome }}</p>
+                      <span v-if="c.conta_demonstracao" class="shrink-0 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-300">
+                        Demonstração
+                      </span>
+                    </div>
                     <p class="text-xs text-slate-400 truncate">{{ c.slug }} · {{ c.modalidade ?? 'sem modalidade' }}</p>
                   </div>
                 </div>

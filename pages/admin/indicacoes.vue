@@ -129,13 +129,18 @@ async function aprovar(id: string) {
   }
   // Emite voucher automaticamente para o clube indicador
   const dias = config.value?.indicacao_dias_recompensa ?? 30
-  await vouchers.aplicar({
+  const { error: voucherError } = await vouchers.aplicar({
     clube_id: data.clube_indicador_id,
     tipo: 'cortesia',
     dias_concedidos: dias,
     motivo: `Indicação aprovada — Convide e Ganhe (${data.nome_indicado ?? data.email_indicado})`,
     observacoes: `Indicação ID: ${id}`,
   })
+  if (voucherError) {
+    toast.error('Indicação aprovada, mas o voucher falhou', voucherError.message ?? 'Aplique manualmente em Vouchers.')
+    await carregar()
+    return
+  }
   await auditoria.registrar({
     acao: 'indicacao_aprovada',
     entidade: 'indicacao',

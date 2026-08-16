@@ -11,13 +11,16 @@ export function useAdminFinanceiro() {
   }) {
     let query = supabase
       .from('movimentacoes_sistema')
-      .select('*, clube:clube_id(id, nome, slug)')
+      .select('*, clube:clube_id(id, nome, slug, conta_demonstracao)')
     if (filtros?.tipo) query = query.eq('tipo', filtros.tipo)
     if (filtros?.clube_id) query = query.eq('clube_id', filtros.clube_id)
     if (filtros?.desde) query = query.gte('data', filtros.desde)
     if (filtros?.ate) query = query.lte('data', filtros.ate)
     const { data, error } = await query.order('data', { ascending: false })
-    return { data: data as MovimentacaoFinanceiraSistema[] | null, error }
+    // Contas de demonstração (dados mocados pra apresentar o produto) não
+    // podem contar no financeiro real do admin.
+    const filtrado = (data ?? []).filter((m: any) => !m.clube?.conta_demonstracao)
+    return { data: filtrado as MovimentacaoFinanceiraSistema[] | null, error }
   }
 
   async function registrar(payload: {
@@ -40,7 +43,10 @@ export function useAdminFinanceiro() {
   async function resumoFinanceiro(mes?: string) {
     const referencia = mes ?? new Date().toISOString().slice(0, 7)
     const inicio = `${referencia}-01`
-    const fim = `${referencia}-31`
+    // `-31` quebra em fev/abr/jun/set/nov (data inválida, Postgres rejeita o
+    // filtro) — calcula o último dia real do mês.
+    const [ano, mesNum] = referencia.split('-').map(Number)
+    const fim = new Date(Date.UTC(ano, mesNum, 0)).toISOString().slice(0, 10)
 
     const { data: movs } = await listarMovimentacoes({ desde: inicio, ate: fim })
     const lista = movs ?? []

@@ -2,6 +2,7 @@ import type { LogAuditoria, AuditoriaAcao } from '~/types'
 
 export function useAuditoria() {
   const supabase = useSupabaseClient()
+  const user = useSupabaseUser()
 
   async function listar(filtros?: {
     acao?: AuditoriaAcao
@@ -35,6 +36,9 @@ export function useAuditoria() {
       entidade_id: payload.entidade_id ?? null,
       detalhes: payload.detalhes ?? {},
       user_agent: process.client ? navigator.userAgent : null,
+      // Sem isso todo log registrado pelo client (fora das RPCs que já
+      // setam via auth.uid()) aparecia como "Sistema" na auditoria.
+      superadmin_id: user.value?.id ?? null,
     }).select().single()
     return { data, error }
   }

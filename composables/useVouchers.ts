@@ -2,6 +2,7 @@ import type { Voucher, VoucherTipo, VoucherStatus, Clube } from '~/types'
 
 export function useVouchers() {
   const supabase = useSupabaseClient()
+  const user = useSupabaseUser()
 
   async function listar(filtros?: {
     status?: VoucherStatus
@@ -38,6 +39,9 @@ export function useVouchers() {
         observacoes: payload.observacoes ?? null,
         status: 'ativo',
         aplicado_em: new Date().toISOString(),
+        // emitido_por é NOT NULL (references superadmins) — sem isso todo
+        // "aplicar voucher" falhava com violação de constraint.
+        emitido_por: user.value?.id,
       })
       .select('*, clube:clube_id(id, nome, slug, logo_url), emissor:emitido_por(id, nome)')
       .single()

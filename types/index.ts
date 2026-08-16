@@ -11,6 +11,8 @@ export interface Clube {
   logo_url: string | null
   plano: 'basico' | 'intermediario' | 'profissional'
   plano_ativo: boolean
+  /** Conta de apresentação/venda (dados mocados, plano fixo) — excluída das métricas financeiras do admin. */
+  conta_demonstracao: boolean
   criado_em: string
   atualizado_em: string
 }
