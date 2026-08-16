@@ -73,24 +73,21 @@ export async function criarPixParaCobranca(
         ...(atleta?.telefone_responsavel ? { cellphone: atleta.telefone_responsavel } : {}),
       }
       try {
-        // Taxa Athletto: percentual + fixo combinados na mesma cobrança (ex.:
-        // 1,5% + R$1,27) — antes era só um OU outro. Cálculo centralizado
-        // aqui (único lugar que monta o split de uma cobrança Pix).
+        // Taxa Athletto: percentual + fixo (ex.: 2,5% + R$1,50), calculados
+        // aqui e mandados como UM item de split só ('fixed', valor já
+        // somado) — confirmado por erro real da ValidaPay ("Recebedor
+        // duplicado no split") que ela recusa duas entradas de split pra
+        // mesma accountNumber, mesmo com type diferente (percentage+fixed).
         const masterAccount = process.env.VALIDAPAY_MASTER_ACCOUNT || process.env.VALIDAPAY_MASTER_ACCOUNT_NUMBER
         const splitPct = Number(process.env.VALIDAPAY_SPLIT_PERCENTAGE ?? '0')
         const splitAmtCentavos = Number(process.env.VALIDAPAY_SPLIT_AMOUNT ?? '0')
         let split: SplitItem[] | undefined
         let taxaAthletto: number | null = null
         if (masterAccount && (splitPct > 0 || splitAmtCentavos > 0)) {
-          split = []
-          taxaAthletto = 0
-          if (splitPct > 0) {
-            split.push({ type: 'percentage', accountNumber: masterAccount, amount: splitPct })
-            taxaAthletto += Number(cb.valor) * (splitPct / 100)
-          }
-          if (splitAmtCentavos > 0) {
-            split.push({ type: 'fixed', accountNumber: masterAccount, amount: splitAmtCentavos })
-            taxaAthletto += splitAmtCentavos / 100
+          taxaAthletto = Number(cb.valor) * (splitPct / 100) + splitAmtCentavos / 100
+          const taxaCentavos = Math.round(taxaAthletto * 100)
+          if (taxaCentavos > 0) {
+            split = [{ type: 'fixed', accountNumber: masterAccount, amount: taxaCentavos }]
           }
         }
 
