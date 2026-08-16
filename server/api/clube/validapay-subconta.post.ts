@@ -69,27 +69,36 @@ export default defineEventHandler(async (event) => {
     delete dados.phoneNumber
   }
 
-  // Converte financialDetails (PF) para números.
+  // Limpa formatação (R$, pontos, vírgulas) e devolve como STRING numérica
+  // ("5000", não 5000) — a ValidaPay recusa esses campos como number
+  // (confirmado via webhook: "Expected string, received number" em
+  // financialDetails.declaredIncome/netWorth). A versão anterior convertia
+  // pra Number, exatamente o formato que a ValidaPay rejeita.
+  function paraStringNumerica(v: unknown): string {
+    return String(Number(String(v).replace(/\D/g, '')) || 0)
+  }
+
+  // financialDetails (PF).
   if (tipo === 'pf' && dados.financialDetails && typeof dados.financialDetails === 'object') {
     const fd = dados.financialDetails as any
-    if (fd.declaredIncome !== undefined) fd.declaredIncome = Number(String(fd.declaredIncome).replace(/\D/g, '')) || 0
-    if (fd.netWorth !== undefined)       fd.netWorth       = Number(String(fd.netWorth).replace(/\D/g, ''))       || 0
+    if (fd.declaredIncome !== undefined) fd.declaredIncome = paraStringNumerica(fd.declaredIncome)
+    if (fd.netWorth !== undefined)       fd.netWorth       = paraStringNumerica(fd.netWorth)
   }
-  // Converte financialCompanyDetails (PJ) para número.
+  // financialCompanyDetails (PJ).
   if (tipo === 'pj' && dados.financialCompanyDetails && typeof dados.financialCompanyDetails === 'object') {
     const fcd = dados.financialCompanyDetails as any
     if (fcd.declaredCompanyRevenue !== undefined)
-      fcd.declaredCompanyRevenue = Number(String(fcd.declaredCompanyRevenue).replace(/\D/g, '')) || 0
+      fcd.declaredCompanyRevenue = paraStringNumerica(fcd.declaredCompanyRevenue)
   }
-  // Converte financialOwnerDetails dos owners PJ para número (campos opcionais).
+  // financialOwnerDetails dos owners PJ (campos opcionais).
   if (tipo === 'pj' && Array.isArray(dados.owner)) {
     for (const owner of dados.owner as any[]) {
       if (owner.financialOwnerDetails && typeof owner.financialOwnerDetails === 'object') {
         const fo = owner.financialOwnerDetails
         if (fo.ownerDeclaredIncome !== undefined)
-          fo.ownerDeclaredIncome = Number(String(fo.ownerDeclaredIncome).replace(/\D/g, '')) || 0
+          fo.ownerDeclaredIncome = paraStringNumerica(fo.ownerDeclaredIncome)
         if (fo.ownerDeclaredRevenue !== undefined)
-          fo.ownerDeclaredRevenue = Number(String(fo.ownerDeclaredRevenue).replace(/\D/g, '')) || 0
+          fo.ownerDeclaredRevenue = paraStringNumerica(fo.ownerDeclaredRevenue)
       }
     }
   }
