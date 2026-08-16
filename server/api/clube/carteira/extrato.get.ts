@@ -2,6 +2,7 @@ import { defineEventHandler, createError, getHeader, getQuery } from 'h3'
 import { createClient } from '@supabase/supabase-js'
 import { serverSupabaseUser } from '#supabase/server'
 import { extratoSubconta, validapayConfigurada } from '~~/server/utils/validapay'
+import { mensagemErroGateway } from '~~/server/utils/erroAmigavel'
 
 export default defineEventHandler(async (event) => {
   const supabaseUrl = process.env.SUPABASE_URL || process.env.NUXT_PUBLIC_SUPABASE_URL
@@ -63,10 +64,19 @@ export default defineEventHandler(async (event) => {
 
     return { subconta_aprovada: true, transacoes, pagina, _raw: resp }
   } catch (err: any) {
+    try {
+      await admin.from('webhook_logs').insert({
+        origem: 'validapay',
+        evento: 'carteira_extrato_erro',
+        payload: { clube_id: gestor.clube_id, erro_message: err?.message, erro_data: (err as any)?.data ?? null, status_code: (err as any)?.statusCode ?? null },
+        status: 'erro',
+        recebido_em: new Date().toISOString(),
+      })
+    } catch { /* log é best-effort */ }
     return {
       subconta_aprovada: true,
       transacoes: [],
-      erro: err?.data?.message ?? err?.message ?? 'Extrato indisponível.',
+      erro: mensagemErroGateway(err, 'Extrato indisponível no momento.'),
     }
   }
 })

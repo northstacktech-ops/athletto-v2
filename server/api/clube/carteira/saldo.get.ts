@@ -2,6 +2,7 @@ import { defineEventHandler, createError, getHeader } from 'h3'
 import { createClient } from '@supabase/supabase-js'
 import { serverSupabaseUser } from '#supabase/server'
 import { saldoSubconta, validapayConfigurada } from '~~/server/utils/validapay'
+import { mensagemErroGateway } from '~~/server/utils/erroAmigavel'
 
 export default defineEventHandler(async (event) => {
   const supabaseUrl = process.env.SUPABASE_URL || process.env.NUXT_PUBLIC_SUPABASE_URL
@@ -66,10 +67,19 @@ export default defineEventHandler(async (event) => {
       _raw: resp,
     }
   } catch (err: any) {
+    try {
+      await admin.from('webhook_logs').insert({
+        origem: 'validapay',
+        evento: 'carteira_saldo_erro',
+        payload: { clube_id: gestor.clube_id, erro_message: err?.message, erro_data: (err as any)?.data ?? null, status_code: (err as any)?.statusCode ?? null },
+        status: 'erro',
+        recebido_em: new Date().toISOString(),
+      })
+    } catch { /* log é best-effort */ }
     return {
       subconta_aprovada: true,
       saldo: null,
-      erro: err?.data?.message ?? err?.message ?? 'Erro ao consultar saldo.',
+      erro: mensagemErroGateway(err, 'Erro ao consultar saldo.'),
     }
   }
 })
