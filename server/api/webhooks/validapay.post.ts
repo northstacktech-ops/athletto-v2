@@ -2,6 +2,7 @@ import { defineEventHandler, readRawBody, getHeader, createError } from 'h3'
 import { createClient } from '@supabase/supabase-js'
 import { createHmac, timingSafeEqual } from 'node:crypto'
 import { logEvento, erroParaLog } from '~~/server/utils/logger'
+import { baixarCobrancaPaga } from '~~/server/utils/cobranca'
 import { PLANOS } from '~/types'
 
 /**
@@ -115,29 +116,12 @@ export default defineEventHandler(async (event) => {
 
       const { data: cb } = await supabase
         .from('cobrancas')
-        .select('id, clube_id, atleta_id, caixinha_id, valor, status')
+        .select('id, status')
         .eq('validapay_charge_id', chargeId)
         .maybeSingle()
 
       if (cb && cb.status !== 'pago') {
-        await supabase
-          .from('cobrancas')
-          .update({ status: 'pago', data_pagamento: paidAt, atualizado_em: new Date().toISOString() })
-          .eq('id', cb.id)
-
-        await supabase.from('transacoes').insert({
-          clube_id: cb.clube_id,
-          tipo: 'entrada',
-          valor: valor || cb.valor,
-          descricao: 'Pagamento recebido via Pix (ValidaPay)',
-          data: paidAt,
-          cobranca_id: cb.id,
-          caixinha_id: cb.caixinha_id,
-          atleta_id: cb.atleta_id,
-          origem: 'webhook',
-        })
-
-        if (cb.caixinha_id) { try { await supabase.rpc('recalcular_caixinha', { p_caixinha_id: cb.caixinha_id }) } catch { /* best-effort */ } }
+        await baixarCobrancaPaga(supabase, cb.id, { valor, paidAt, origem: 'webhook' })
       } else if (!cb) {
         // Não é cobrança de atleta → pode ser a ASSINATURA do clube (clube paga
         // o Athletto). Ativa o plano pendente preservando o trial.

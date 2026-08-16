@@ -2,9 +2,11 @@
  * Cliente da API ValidaPay (server-only).
  *
  * Modelo Athletto: cada CLUBE é uma SUBCONTA (Seller) da conta Master da
- * Athletto. Mensalidades são cobradas na subconta do clube (o clube recebe
- * direto), sem split/taxa. A conta Master só orquestra (criar subconta + gerar
- * cobrança via API).
+ * Athletto. Cobranças são geradas na subconta do clube (o clube recebe
+ * direto); a conta Master só orquestra (criar subconta + gerar cobrança via
+ * API). Taxa de transação da Athletto (opcional, via VALIDAPAY_MASTER_ACCOUNT
+ * + VALIDAPAY_SPLIT_PERCENTAGE/VALIDAPAY_SPLIT_AMOUNT) é montada em
+ * server/utils/pix.ts, não aqui — esta camada só expõe o `split[]` genérico.
  *
  * Auth: OAuth2 client_credentials (host separado oauth2(-sandbox)).
  * Credenciais vêm de env (nunca do client):

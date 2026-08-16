@@ -28,6 +28,32 @@ class CpfInputFormatter extends TextInputFormatter {
   }
 }
 
+/// Formata a entrada como data: 00/00/0000
+class DataInputFormatter extends TextInputFormatter {
+  const DataInputFormatter();
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final digits = newValue.text.replaceAll(RegExp(r'\D'), '');
+    final limited = digits.length > 8 ? digits.substring(0, 8) : digits;
+
+    final buffer = StringBuffer();
+    for (int i = 0; i < limited.length; i++) {
+      if (i == 2 || i == 4) buffer.write('/');
+      buffer.write(limited[i]);
+    }
+
+    final text = buffer.toString();
+    return TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
+    );
+  }
+}
+
 /// Helpers de formatação.
 class Fmt {
   static final _moeda =

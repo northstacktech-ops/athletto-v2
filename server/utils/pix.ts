@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { logEvento, erroParaLog } from '~~/server/utils/logger'
-import { criarCobrancaPix as criarPixValidaPay, validapayConfigurada } from '~~/server/utils/validapay'
+import { criarCobrancaPix as criarPixValidaPay, validapayConfigurada, type SplitItem } from '~~/server/utils/validapay'
 
 export interface CriarPixResult {
   ok: boolean
@@ -72,23 +72,24 @@ export async function criarPixParaCobranca(
         ...(atleta?.telefone_responsavel ? { cellphone: atleta.telefone_responsavel } : {}),
       }
       try {
+        // Taxa Athletto: percentual + fixo combinados na mesma cobrança (ex.:
+        // 1,5% + R$1,27) — antes era só um OU outro. Cálculo centralizado
+        // aqui (único lugar que monta o split de uma cobrança Pix).
         const masterAccount = process.env.VALIDAPAY_MASTER_ACCOUNT || process.env.VALIDAPAY_MASTER_ACCOUNT_NUMBER
-        let split: any[] | undefined = undefined
-        if (masterAccount) {
-          const splitPct = Number(process.env.VALIDAPAY_SPLIT_PERCENTAGE ?? '0')
-          const splitAmt = Number(process.env.VALIDAPAY_SPLIT_AMOUNT ?? '0')
+        const splitPct = Number(process.env.VALIDAPAY_SPLIT_PERCENTAGE ?? '0')
+        const splitAmtCentavos = Number(process.env.VALIDAPAY_SPLIT_AMOUNT ?? '0')
+        let split: SplitItem[] | undefined
+        let taxaAthletto: number | null = null
+        if (masterAccount && (splitPct > 0 || splitAmtCentavos > 0)) {
+          split = []
+          taxaAthletto = 0
           if (splitPct > 0) {
-            split = [{
-              type: 'percentage',
-              accountNumber: masterAccount,
-              amount: splitPct
-            }]
-          } else if (splitAmt > 0) {
-            split = [{
-              type: 'fixed',
-              accountNumber: masterAccount,
-              amount: splitAmt // em centavos
-            }]
+            split.push({ type: 'percentage', accountNumber: masterAccount, amount: splitPct })
+            taxaAthletto += Number(cb.valor) * (splitPct / 100)
+          }
+          if (splitAmtCentavos > 0) {
+            split.push({ type: 'fixed', accountNumber: masterAccount, amount: splitAmtCentavos })
+            taxaAthletto += splitAmtCentavos / 100
           }
         }
 
@@ -101,7 +102,12 @@ export async function criarPixParaCobranca(
         })
         await supabase
           .from('cobrancas')
-          .update({ validapay_charge_id: resp.chargeId, validapay_emv: resp.emv, atualizado_em: new Date().toISOString() })
+          .update({
+            validapay_charge_id: resp.chargeId,
+            validapay_emv: resp.emv,
+            taxa_athletto: taxaAthletto,
+            atualizado_em: new Date().toISOString(),
+          })
           .eq('id', cobrancaId)
         return { ok: true, id: resp.chargeId, copy_paste: resp.emv || undefined, qr_code: resp.qrCodeBase64 }
       } catch (err: any) {

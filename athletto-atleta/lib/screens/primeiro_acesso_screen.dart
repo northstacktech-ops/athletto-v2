@@ -8,13 +8,17 @@ import '../services/api.dart';
 import '../services/session.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_text_field.dart';
+import '../widgets/formatters.dart';
 import '../widgets/pressable.dart';
 import '../widgets/primary_button.dart';
 import 'cpf_screen.dart' show AuthScaffold, AuthErrorBox;
 import 'home_shell.dart';
 
 /// Criar senha (primeiro acesso) / redefinir senha.
-/// O backend exige um código de 6 dígitos além da senha.
+///
+/// Primeiro acesso: CPF + data de nascimento provam quem é o atleta (ambos
+/// já cadastrados pelo gestor) — sem depender de um código gerado por ele.
+/// Reset de senha continua exigindo o código de 6 dígitos do gestor.
 class PrimeiroAcessoScreen extends StatefulWidget {
   final String cpf;
   final String clubeId;
@@ -38,6 +42,7 @@ class PrimeiroAcessoScreen extends StatefulWidget {
 class _PrimeiroAcessoScreenState extends State<PrimeiroAcessoScreen> {
   final _formKey = GlobalKey<FormState>();
   final _codigoController = TextEditingController();
+  final _dataNascimentoController = TextEditingController();
   final _senhaController = TextEditingController();
   final _confirmarController = TextEditingController();
   bool _loading = false;
@@ -47,9 +52,29 @@ class _PrimeiroAcessoScreenState extends State<PrimeiroAcessoScreen> {
   @override
   void dispose() {
     _codigoController.dispose();
+    _dataNascimentoController.dispose();
     _senhaController.dispose();
     _confirmarController.dispose();
     super.dispose();
+  }
+
+  /// Converte "DD/MM/AAAA" pro formato que a API espera ("AAAA-MM-DD").
+  /// Retorna null se a data não for válida (formato ou data inexistente).
+  String? _dataNascimentoIso() {
+    final texto = _dataNascimentoController.text.trim();
+    final match = RegExp(r'^(\d{2})/(\d{2})/(\d{4})$').firstMatch(texto);
+    if (match == null) return null;
+    final dia = int.parse(match.group(1)!);
+    final mes = int.parse(match.group(2)!);
+    final ano = int.parse(match.group(3)!);
+    final data = DateTime(ano, mes, dia);
+    // DateTime "normaliza" datas inválidas (ex.: 31/02 vira 03/03) — se não
+    // bater com o que foi digitado, a data não existe de verdade.
+    if (data.year != ano || data.month != mes || data.day != dia) return null;
+    if (data.isAfter(DateTime.now())) return null;
+    final mm = mes.toString().padLeft(2, '0');
+    final dd = dia.toString().padLeft(2, '0');
+    return '$ano-$mm-$dd';
   }
 
   String _device() {
@@ -72,12 +97,21 @@ class _PrimeiroAcessoScreenState extends State<PrimeiroAcessoScreen> {
 
     setState(() => _loading = true);
     try {
-      await Api.instance.definirSenha(
-        cpf: widget.cpf,
-        clubeId: widget.clubeId,
-        codigo: _codigoController.text.trim(),
-        senha: _senhaController.text,
-      );
+      if (widget.modoReset) {
+        await Api.instance.definirSenha(
+          cpf: widget.cpf,
+          clubeId: widget.clubeId,
+          codigo: _codigoController.text.trim(),
+          senha: _senhaController.text,
+        );
+      } else {
+        await Api.instance.primeiroAcesso(
+          cpf: widget.cpf,
+          clubeId: widget.clubeId,
+          dataNascimento: _dataNascimentoIso()!,
+          senha: _senhaController.text,
+        );
+      }
 
       // Tenta logar direto com a nova senha.
       try {
@@ -158,28 +192,53 @@ class _PrimeiroAcessoScreenState extends State<PrimeiroAcessoScreen> {
                       text: nome,
                       style: const TextStyle(
                           color: AppColors.lime, fontWeight: FontWeight.w600)),
-                  const TextSpan(text: '. Use o código enviado pelo gestor.'),
+                  TextSpan(
+                      text: widget.modoReset
+                          ? '. Use o código enviado pelo gestor.'
+                          : '. Confirme sua data de nascimento pra continuar.'),
                 ],
               ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 28),
-            AppTextField(
-              controller: _codigoController,
-              label: 'Código de acesso (6 dígitos)',
-              hint: '000000',
-              keyboardType: TextInputType.number,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(6),
-              ],
-              validator: (v) {
-                if ((v ?? '').trim().length != 6) {
-                  return 'O código tem 6 dígitos.';
-                }
-                return null;
-              },
-            ),
+            if (widget.modoReset)
+              AppTextField(
+                controller: _codigoController,
+                label: 'Código de acesso (6 dígitos)',
+                hint: '000000',
+                keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(6),
+                ],
+                validator: (v) {
+                  if ((v ?? '').trim().length != 6) {
+                    return 'O código tem 6 dígitos.';
+                  }
+                  return null;
+                },
+              )
+            else
+              AppTextField(
+                controller: _dataNascimentoController,
+                label: 'Data de nascimento',
+                hint: 'DD/MM/AAAA',
+                keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(8),
+                  const DataInputFormatter(),
+                ],
+                validator: (v) {
+                  if ((v ?? '').trim().length != 10) {
+                    return 'Informe o dia, mês e ano.';
+                  }
+                  if (_dataNascimentoIso() == null) {
+                    return 'Data inválida.';
+                  }
+                  return null;
+                },
+              ),
             const SizedBox(height: 16),
             PasswordField(
               controller: _senhaController,

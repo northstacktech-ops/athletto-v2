@@ -80,6 +80,14 @@ class Api {
         return 'Código de acesso inválido. Confira com o seu gestor.';
       case 'senha_curta':
         return 'A senha deve ter no mínimo 8 caracteres.';
+      case 'ja_tem_senha':
+        return 'Essa conta já tem senha. Use "Entrar" ou "Esqueci minha senha".';
+      case 'sem_data_nascimento':
+        return 'Sua data de nascimento não está cadastrada. Fale com o seu clube.';
+      case 'dados_nao_conferem':
+        return 'CPF ou data de nascimento não conferem com o cadastro.';
+      case 'muitas_tentativas':
+        return 'Muitas tentativas. Aguarde alguns minutos e tente de novo.';
       default:
         return 'Não foi possível concluir a operação. Tente novamente.';
     }
@@ -198,6 +206,32 @@ class Api {
               (data['clube'] as Map?)?.cast<String, dynamic>() ?? {}),
         );
       }
+    }
+    _throwFromBody(res);
+  }
+
+  /// POST /primeiro-acesso — CPF + data de nascimento provam quem é o
+  /// atleta; substitui o código do gestor no primeiro acesso (não no reset).
+  /// [dataNascimento] no formato YYYY-MM-DD.
+  Future<void> primeiroAcesso({
+    required String cpf,
+    required String clubeId,
+    required String dataNascimento,
+    required String senha,
+  }) async {
+    final res = await _post('/primeiro-acesso', {
+      'cpf': cpf,
+      'clube_id': clubeId,
+      'data_nascimento': dataNascimento,
+      'senha': senha,
+    });
+    final data = _decode(res);
+
+    if (res.statusCode >= 200 &&
+        res.statusCode < 300 &&
+        data is Map &&
+        data['ok'] == true) {
+      return;
     }
     _throwFromBody(res);
   }

@@ -264,6 +264,17 @@
                 </span>
               </div>
             </div>
+
+            <!-- Lembrete: sem isso, nenhuma cobrança consegue ser gerada. -->
+            <div class="mt-4 flex items-start gap-3 rounded-xl border border-blue-100 bg-blue-50 px-5 py-4">
+              <svg class="w-5 h-5 text-blue-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <p class="text-sm text-blue-900 leading-relaxed">
+                Falta um passo pra receber as mensalidades: configure sua conta de recebimento em
+                <NuxtLink to="/configuracoes#pagamentos" class="font-bold underline hover:no-underline">Configurações → Pagamentos</NuxtLink>.
+              </p>
+            </div>
           </template>
 
         </div>
