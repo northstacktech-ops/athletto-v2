@@ -113,6 +113,20 @@ export async function criarPixParaCobranca(
         return { ok: true, id: resp.chargeId, copy_paste: resp.emv || undefined, qr_code: resp.qrCodeBase64 }
       } catch (err: any) {
         logEvento('error', 'pix.criar.validapay_erro', { cobranca_id: cobrancaId, erro: erroParaLog(err) })
+        // Mesmo padrão do caminho de sucesso (linha ~104): guarda a resposta
+        // crua da ValidaPay pra investigação — hoje só erro de sucesso era
+        // logado, falha ficava só no console (inacessível fora da Vercel).
+        try {
+          await supabase.from('webhook_logs').insert({
+            origem: 'validapay',
+            evento: 'charge_create_error',
+            payment_id: null,
+            payload: { cobranca_id: cobrancaId, erro: erroParaLog(err), data: (err as any)?.data ?? null },
+            hmac_valido: true,
+            status: 'erro',
+            recebido_em: new Date().toISOString(),
+          })
+        } catch { /* log é best-effort */ }
         return { ok: false, status: 502, erro: mensagemErroGateway(err, 'Não foi possível gerar o Pix agora. Tente novamente em instantes.') }
       }
     }

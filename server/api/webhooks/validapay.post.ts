@@ -83,12 +83,17 @@ export default defineEventHandler(async (event) => {
     // chegar como onboarding.*, account.*, proposal.* ou nome desconhecido.
     const ehSubconta = evento.startsWith('onboarding') || evento.startsWith('account.') || evento.startsWith('proposal.')
     if (ehSubconta) {
-      // Evento de status de subconta. Decidimos por status/account presentes no payload.
-      // Na 1ª aprovação real, o nome exato fica registrado em webhook_logs.evento.
+      // Evento de status de subconta. Confirmado via payload real (onboarding.
+      // documentscopy/backgroundcheck): vem como { data: {formId, status,
+      // documentNumber, ...}, event, accountId, timestamp } — accountId no
+      // topo do payload, não aninhado em account/subaccount como se assumia
+      // antes de ver um evento de verdade. Mantém os fallbacks antigos por
+      // segurança, já que a doc pública da ValidaPay não é completa.
+      const dataObj = payload?.data ?? {}
       const acc = payload?.account ?? payload?.subaccount ?? {}
-      const formId = payload?.formId ?? payload?.proposalId ?? payload?.id ?? null
-      const accountNumber = acc.account ?? acc.accountNumber ?? payload?.accountNumber ?? null
-      const statusRaw = String(payload?.status ?? acc.status ?? '').toLowerCase()
+      const formId = dataObj?.formId ?? payload?.formId ?? payload?.proposalId ?? payload?.id ?? null
+      const accountNumber = payload?.accountId ?? acc.account ?? acc.accountNumber ?? payload?.accountNumber ?? null
+      const statusRaw = String(dataObj?.status ?? payload?.status ?? acc.status ?? '').toLowerCase()
       const recusado = ['rejected', 'refused', 'denied', 'recusado', 'reproved'].some((s) => statusRaw.includes(s))
       const aprovado = !recusado && (
         !!accountNumber ||
@@ -96,12 +101,15 @@ export default defineEventHandler(async (event) => {
       )
 
       if (formId && (aprovado || recusado)) {
+        // documentNumber real vem em data.documentNumber — só sobrescreve o
+        // já salvo se o payload realmente trouxer um valor (nunca limpa com null).
+        const documentNumber = dataObj?.documentNumber ?? acc.documentNumber ?? payload?.documentNumber ?? null
         await supabase
           .from('clube_validapay')
           .update({
             account_number: accountNumber,
             branch: acc.branch ?? null,
-            document_number: acc.documentNumber ?? payload?.documentNumber ?? null,
+            ...(documentNumber ? { document_number: documentNumber } : {}),
             ispb: acc.ispb ?? null,
             status: recusado ? 'recusado' : 'aprovado',
             atualizado_em: new Date().toISOString(),
