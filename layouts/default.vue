@@ -48,6 +48,9 @@
     <!-- Tour guiado do sidebar (primeiro acesso) -->
     <LayoutSidebarTour />
 
+    <!-- Trial vencido / plano suspenso ou cancelado (não-dispensável) -->
+    <LayoutPlanoBloqueadoModal />
+
     <!-- Toasts -->
     <UiToastContainer />
   </div>

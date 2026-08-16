@@ -7,7 +7,7 @@
       <div class="flex items-start gap-3 min-w-0 flex-1">
         <TurmasTurmaIcone :icone="turma.icone" :cor="turma.cor" size="md"/>
         <div class="min-w-0">
-          <h3 class="font-bold text-base text-slate-900 dark:text-white truncate">{{ turma.nome }}</h3>
+          <h3 class="font-bold text-sm text-slate-900 dark:text-white truncate">{{ turma.nome }}</h3>
           <p v-if="turma.descricao" class="text-xs text-slate-500 line-clamp-2 mt-0.5">{{ turma.descricao }}</p>
         </div>
       </div>

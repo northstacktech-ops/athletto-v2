@@ -1,14 +1,14 @@
 <template>
-  <header class="sticky top-0 z-30 bg-white dark:bg-surface-elevated-dark border-b border-gray-200 dark:border-white/[0.06]">
+  <header class="sticky top-0 z-30 bg-white dark:bg-surface-elevated-dark border-b border-slate-200 dark:border-white/[0.06]">
     <div class="flex items-center h-[64px] px-4 sm:px-6 gap-4">
 
       <!-- Mobile menu -->
       <button
-        class="lg:hidden p-2 -ml-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/[0.05]"
+        class="lg:hidden p-2 -ml-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.05]"
         @click="drawerOpen = true"
         aria-label="Abrir menu"
       >
-        <svg class="w-5 h-5 text-gray-700 dark:text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg class="w-5 h-5 text-slate-700 dark:text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <line x1="3" y1="6" x2="21" y2="6"/>
           <line x1="3" y1="12" x2="21" y2="12"/>
           <line x1="3" y1="18" x2="21" y2="18"/>
@@ -22,9 +22,9 @@
                 style="background-color: #0b0d12; color: #ccff00;">
             ADMIN
           </span>
-          <h1 class="text-base font-bold text-gray-900 dark:text-white truncate">{{ titulo }}</h1>
+          <h1 class="text-base font-bold text-slate-900 dark:text-white truncate">{{ titulo }}</h1>
         </div>
-        <p v-if="subtitulo" class="text-xs text-gray-400 dark:text-gray-500 mt-0.5 truncate">
+        <p v-if="subtitulo" class="text-xs text-slate-400 dark:text-slate-500 mt-0.5 truncate">
           {{ subtitulo }}
         </p>
       </div>
@@ -42,11 +42,11 @@
 
       <!-- Sign out -->
       <button
-        class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/[0.05] transition-colors"
+        class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.05] transition-colors"
         title="Sair"
         @click="handleSignOut"
       >
-        <svg class="w-4.5 h-4.5 text-gray-600 dark:text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg class="w-4.5 h-4.5 text-slate-600 dark:text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
           <polyline points="16 17 21 12 16 7"/>
           <line x1="21" y1="12" x2="9" y2="12"/>

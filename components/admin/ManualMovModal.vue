@@ -3,14 +3,14 @@
     <div class="fixed inset-0 z-50 flex items-center justify-center p-4" @click.self="$emit('close')">
       <div class="absolute inset-0 bg-black/60"/>
       <div class="relative w-full max-w-xl bg-white dark:bg-surface-elevated-dark rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
-        <div class="px-6 py-5 border-b border-gray-100 dark:border-white/[0.07]">
-          <h2 class="text-lg font-bold text-gray-900 dark:text-white">Lançamento manual</h2>
-          <p class="text-sm text-gray-500 mt-0.5">Despesa operacional ou ajuste contábil</p>
+        <div class="px-6 py-5 border-b border-slate-100 dark:border-white/[0.07]">
+          <h2 class="text-lg font-bold text-slate-900 dark:text-white">Lançamento manual</h2>
+          <p class="text-sm text-slate-500 mt-0.5">Despesa operacional ou ajuste contábil</p>
         </div>
         <form class="px-6 py-5 space-y-4 overflow-y-auto" @submit.prevent="salvar">
           <div>
             <label class="block text-sm font-semibold mb-1.5">Tipo</label>
-            <select v-model="form.tipo" class="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-white/[0.10] bg-white dark:bg-surface-canvas-dark text-sm">
+            <select v-model="form.tipo" class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-white/[0.10] bg-white dark:bg-surface-canvas-dark text-sm">
               <option value="despesa_operacional">Despesa operacional</option>
               <option value="reembolso">Reembolso</option>
               <option value="taxa_gateway">Taxa de gateway</option>
@@ -20,20 +20,20 @@
           <div>
             <label class="block text-sm font-semibold mb-1.5">Valor (R$)</label>
             <input v-model.number="form.valor" type="number" step="0.01" min="0.01" required
-                   class="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-white/[0.10] bg-white dark:bg-surface-canvas-dark text-sm"/>
+                   class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-white/[0.10] bg-white dark:bg-surface-canvas-dark text-sm"/>
           </div>
           <div>
             <label class="block text-sm font-semibold mb-1.5">Data</label>
             <input v-model="form.data" type="date" required
-                   class="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-white/[0.10] bg-white dark:bg-surface-canvas-dark text-sm"/>
+                   class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-white/[0.10] bg-white dark:bg-surface-canvas-dark text-sm"/>
           </div>
           <div>
             <label class="block text-sm font-semibold mb-1.5">Descrição</label>
             <input v-model="form.descricao" type="text" required maxlength="200"
-                   class="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-white/[0.10] bg-white dark:bg-surface-canvas-dark text-sm"/>
+                   class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-white/[0.10] bg-white dark:bg-surface-canvas-dark text-sm"/>
           </div>
           <div class="flex justify-end gap-2 pt-2">
-            <button type="button" class="px-4 py-2 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-100" @click="$emit('close')">Cancelar</button>
+            <button type="button" class="px-4 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-100" @click="$emit('close')">Cancelar</button>
             <button type="submit" :disabled="loading" class="px-4 py-2 rounded-lg text-sm font-semibold text-white" style="background-color: #3d5afe;">
               {{ loading ? 'Salvando...' : 'Salvar' }}
             </button>

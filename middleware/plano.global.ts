@@ -1,10 +1,15 @@
 /**
- * Middleware de plano — bloqueia acesso a rotas do app quando:
- *   • Trial expirado → redireciona para /upgrade?motivo=trial_expirado
- *   • Plano suspenso → redireciona para /upgrade?motivo=suspensa
- *   • Plano cancelado → redireciona para /upgrade?motivo=cancelada
+ * Middleware de plano — não redireciona mais (isso causava o loop /  ↔
+ * /upgrade quando o trial vencia: /upgrade estava na lista de páginas
+ * "de auth" do auth.global.ts, que mandava de volta pra / o usuário logado).
+ * O bloqueio de trial/plano vencido agora é o modal `LayoutPlanoBloqueadoModal`
+ * (renderizado em layouts/default.vue), não uma rota.
  *
- * Não se aplica a: /upgrade, /login, /admin/*, /onboarding, páginas públicas.
+ * Este middleware só garante que o estado de trial já esteja carregado o mais
+ * cedo possível (antes do 1º paint), evitando o modal "piscar" fechado por um
+ * instante em hard reload — layouts/default.vue também chama
+ * carregarAssinatura() no onMounted, então isso aqui é redundante na maioria
+ * das navegações client-side (a guarda em useTrial() evita refetch).
  */
 
 const BYPASS = ['/upgrade', '/login', '/onboarding', '/privacidade', '/termos', '/suporte']
@@ -24,16 +29,6 @@ export default defineNuxtRouteMiddleware(async (to) => {
   const { gestor } = useAuth()
   if (!gestor.value?.clube_id) return
 
-  // Usa o estado em cache do useTrial (busca no Supabase apenas 1x por clube)
-  // em vez de consultar `assinaturas` a CADA navegação — isso bloqueava a troca
-  // de tela com um round-trip de ~150-200ms toda vez.
   const trial = useTrial()
   await trial.carregarAssinatura()
-
-  const status = trial.status.value
-  if (status === 'suspensa') return navigateTo('/upgrade?motivo=suspensa')
-  if (status === 'cancelada') return navigateTo('/upgrade?motivo=cancelada')
-  if (status === 'trial' && trial.trialExpired.value) {
-    return navigateTo('/upgrade?motivo=trial_expirado')
-  }
 })

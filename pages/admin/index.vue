@@ -3,10 +3,8 @@
 
     <!-- ── Header ────────────────────────────────────────────── -->
     <div>
-      <h1 class="text-2xl font-bold text-gray-900 dark:text-white leading-tight">
-        Visão geral do sistema
-      </h1>
-      <p class="text-sm text-gray-400 dark:text-gray-500 mt-0.5">
+      <h1 class="page-title">Visão geral do sistema</h1>
+      <p class="page-description">
         Bem-vindo, {{ adminPrimeiro }} · saúde da plataforma em tempo real
       </p>
     </div>
@@ -17,10 +15,39 @@
         <div v-for="i in 4" :key="i" class="skeleton h-[80px] rounded-xl" />
       </template>
       <template v-else>
-        <AdminKpiCard label="MRR" :value="formatCurrency(metrics?.mrr ?? 0)" icon="financial" accent="#3d5afe" />
-        <AdminKpiCard label="Clubes ativos" :value="`${metrics?.clubes_ativos ?? 0} de ${metrics?.total_clubes ?? 0}`" icon="athletes" accent="#3d5afe" />
-        <AdminKpiCard label="Em trial" :value="String(metrics?.clubes_trial ?? 0)" icon="gift" accent="#f97316" :badge="trialsAVencer.length > 0 ? `${trialsAVencer.length} vencem em 7d` : null" />
-        <AdminKpiCard label="Inadimplentes" :value="String(metrics?.clubes_inadimplentes ?? 0)" icon="billing" accent="#ef4444" />
+        <UiKpiPastel density="compact" tone="brand" label="MRR" :value="formatCurrency(metrics?.mrr ?? 0)">
+          <template #icon>
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+            </svg>
+          </template>
+        </UiKpiPastel>
+        <UiKpiPastel density="compact" tone="brand" label="Clubes ativos" :value="`${metrics?.clubes_ativos ?? 0} de ${metrics?.total_clubes ?? 0}`">
+          <template #icon>
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+            </svg>
+          </template>
+        </UiKpiPastel>
+        <UiKpiPastel density="compact" tone="amber" label="Em trial" :value="String(metrics?.clubes_trial ?? 0)" :delta="trialsAVencer.length > 0 ? `${trialsAVencer.length} vencem em 7d` : undefined">
+          <template #icon>
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="7" width="20" height="5" rx="1"/>
+              <path d="M12 7v15M20 12v10H4V12"/>
+              <path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/>
+            </svg>
+          </template>
+        </UiKpiPastel>
+        <UiKpiPastel density="compact" tone="rose" label="Inadimplentes" :value="String(metrics?.clubes_inadimplentes ?? 0)">
+          <template #icon>
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="5" width="20" height="14" rx="2"/>
+              <path d="M2 10h20"/>
+            </svg>
+          </template>
+        </UiKpiPastel>
       </template>
     </div>
 
@@ -30,21 +57,48 @@
         <div v-for="i in 4" :key="i" class="skeleton h-[80px] rounded-xl" />
       </template>
       <template v-else>
-        <AdminKpiCard label="ARR projetado" :value="formatCurrency(metrics?.arr ?? 0)" icon="financial" accent="#22c55e" />
-        <AdminKpiCard label="Churn (mês)" :value="`${metrics?.churn_mes_percent ?? 0}%`" icon="frequency" accent="#ef4444" />
-        <AdminKpiCard label="Atletas (sistema)" :value="(metrics?.total_atletas ?? 0).toLocaleString('pt-BR')" icon="athletes" accent="#3d5afe" />
-        <AdminKpiCard label="Gestores (sistema)" :value="String(metrics?.total_gestores ?? 0)" icon="groups" accent="#3d5afe" />
+        <UiKpiPastel density="compact" tone="emerald" label="ARR projetado" :value="formatCurrency(metrics?.arr ?? 0)">
+          <template #icon>
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+            </svg>
+          </template>
+        </UiKpiPastel>
+        <UiKpiPastel density="compact" tone="rose" label="Churn (mês)" :value="`${metrics?.churn_mes_percent ?? 0}%`">
+          <template #icon>
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+          </template>
+        </UiKpiPastel>
+        <UiKpiPastel density="compact" tone="brand" label="Atletas (sistema)" :value="(metrics?.total_atletas ?? 0).toLocaleString('pt-BR')">
+          <template #icon>
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+            </svg>
+          </template>
+        </UiKpiPastel>
+        <UiKpiPastel density="compact" tone="brand" label="Gestores (sistema)" :value="String(metrics?.total_gestores ?? 0)">
+          <template #icon>
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2"/>
+              <path d="M5 11V9a2 2 0 012-2h10a2 2 0 012 2v2"/>
+            </svg>
+          </template>
+        </UiKpiPastel>
       </template>
     </div>
 
     <!-- ── Gráfico de crescimento + Trials a vencer ─────────── -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
       <!-- Gráfico -->
-      <div class="lg:col-span-2 bg-white dark:bg-surface-elevated-dark rounded-xl border border-gray-200 dark:border-white/[0.10] overflow-hidden">
+      <div class="card-base lg:col-span-2 overflow-hidden">
         <div class="px-5 pt-4 pb-3 flex items-start justify-between gap-3">
           <div>
-            <h2 class="text-base font-bold text-gray-900 dark:text-white">Crescimento MRR</h2>
-            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+            <h2 class="card-title">Crescimento MRR</h2>
+            <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
               Receita recorrente nos últimos 6 meses
             </p>
           </div>
@@ -67,16 +121,16 @@
       </div>
 
       <!-- Trials a vencer -->
-      <div class="bg-white dark:bg-surface-elevated-dark rounded-xl border border-gray-200 dark:border-white/[0.10] overflow-hidden flex flex-col">
-        <div class="px-5 py-4 border-b border-gray-100 dark:border-white/[0.07] flex items-center gap-2">
+      <div class="card-base overflow-hidden flex flex-col">
+        <div class="card-header">
           <div class="w-6 h-6 rounded-lg flex items-center justify-center" style="background-color: #fff7ed;">
             <svg class="w-3.5 h-3.5 text-orange-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="10"/>
               <polyline points="12 6 12 12 16 14"/>
             </svg>
           </div>
-          <h2 class="text-base font-bold text-gray-900 dark:text-white flex-1">Trials a vencer</h2>
-          <span class="text-xs text-gray-400">{{ trialsAVencer.length }}</span>
+          <h2 class="card-title flex-1">Trials a vencer</h2>
+          <span class="text-xs text-slate-400">{{ trialsAVencer.length }}</span>
         </div>
 
         <div v-if="loading" class="p-5 space-y-3">
@@ -91,17 +145,17 @@
           class="flex-1"
         />
 
-        <ul v-else class="flex-1 divide-y divide-gray-100 dark:divide-white/[0.07]">
+        <ul v-else class="flex-1 divide-y divide-slate-100 dark:divide-white/[0.07]">
           <li v-for="a in trialsAVencer" :key="a.id" class="flex items-center gap-3 px-5 py-3">
             <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold text-white"
                  style="background-color: #f97316;">
               {{ getIniciais(a.clube?.nome ?? '?') }}
             </div>
             <div class="flex-1 min-w-0">
-              <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">
+              <p class="text-sm font-semibold text-slate-900 dark:text-white truncate">
                 {{ a.clube?.nome }}
               </p>
-              <p class="text-xs text-gray-400">
+              <p class="text-xs text-slate-400">
                 Trial vence {{ formatRelativeDate(a.trial_fim) }}
               </p>
             </div>
@@ -120,15 +174,15 @@
     <!-- ── Indicações pendentes + Webhooks falhos ──────────── -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <!-- Indicações pendentes -->
-      <div class="bg-white dark:bg-surface-elevated-dark rounded-xl border border-gray-200 dark:border-white/[0.10] overflow-hidden">
-        <div class="flex items-center gap-2.5 px-5 py-4 border-b border-gray-100 dark:border-white/[0.07]">
+      <div class="card-base overflow-hidden">
+        <div class="card-header">
           <div class="w-6 h-6 rounded-lg flex items-center justify-center" style="background-color: #eff6ff;">
             <svg class="w-3.5 h-3.5 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M20 12v10H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/>
             </svg>
           </div>
-          <h2 class="text-base font-bold text-gray-900 dark:text-white flex-1">Indicações pendentes</h2>
-          <NuxtLink to="/admin/indicacoes" class="text-xs font-semibold text-gray-500 hover:text-gray-700">Ver todas →</NuxtLink>
+          <h2 class="card-title flex-1">Indicações pendentes</h2>
+          <NuxtLink to="/admin/indicacoes" class="text-xs font-semibold text-slate-500 hover:text-slate-700">Ver todas →</NuxtLink>
         </div>
 
         <div v-if="loading" class="p-5 space-y-3">
@@ -142,28 +196,28 @@
           size="sm"
         />
 
-        <ul v-else class="divide-y divide-gray-100 dark:divide-white/[0.07]">
+        <ul v-else class="divide-y divide-slate-100 dark:divide-white/[0.07]">
           <li v-for="ind in indicacoes" :key="ind.id" class="flex items-center gap-3 px-5 py-3">
             <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold text-white"
                  style="background-color: #3d5afe;">
               {{ getIniciais(ind.indicador?.nome ?? '?') }}
             </div>
             <div class="flex-1 min-w-0">
-              <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">
+              <p class="text-sm font-semibold text-slate-900 dark:text-white truncate">
                 {{ ind.indicador?.nome }}
               </p>
-              <p class="text-xs text-gray-400 truncate">
+              <p class="text-xs text-slate-400 truncate">
                 Indicou {{ ind.nome_indicado ?? ind.email_indicado }}
               </p>
             </div>
-            <span class="text-xs text-gray-400 shrink-0">{{ formatRelativeDate(ind.criado_em) }}</span>
+            <span class="text-xs text-slate-400 shrink-0">{{ formatRelativeDate(ind.criado_em) }}</span>
           </li>
         </ul>
       </div>
 
       <!-- Webhooks falhos -->
-      <div class="bg-white dark:bg-surface-elevated-dark rounded-xl border border-gray-200 dark:border-white/[0.10] overflow-hidden">
-        <div class="flex items-center gap-2.5 px-5 py-4 border-b border-gray-100 dark:border-white/[0.07]">
+      <div class="card-base overflow-hidden">
+        <div class="card-header">
           <div class="w-6 h-6 rounded-lg flex items-center justify-center" style="background-color: #fef2f2;">
             <svg class="w-3.5 h-3.5 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
@@ -171,8 +225,8 @@
               <line x1="12" y1="17" x2="12.01" y2="17"/>
             </svg>
           </div>
-          <h2 class="text-base font-bold text-gray-900 dark:text-white flex-1">Webhooks com falha</h2>
-          <NuxtLink to="/admin/webhooks" class="text-xs font-semibold text-gray-500 hover:text-gray-700">Ver todos →</NuxtLink>
+          <h2 class="card-title flex-1">Webhooks com falha</h2>
+          <NuxtLink to="/admin/webhooks" class="text-xs font-semibold text-slate-500 hover:text-slate-700">Ver todos →</NuxtLink>
         </div>
 
         <div v-if="loading" class="p-5 space-y-3">
@@ -186,15 +240,15 @@
           size="sm"
         />
 
-        <ul v-else class="divide-y divide-gray-100 dark:divide-white/[0.07]">
+        <ul v-else class="divide-y divide-slate-100 dark:divide-white/[0.07]">
           <li v-for="wh in webhooks" :key="wh.id" class="px-5 py-3">
             <div class="flex items-center gap-2">
               <span class="px-1.5 py-0.5 rounded text-xs font-bold uppercase tracking-wider bg-red-50 text-red-600">
                 {{ wh.evento }}
               </span>
-              <span class="text-xs text-gray-400 ml-auto">{{ formatRelativeDate(wh.recebido_em) }}</span>
+              <span class="text-xs text-slate-400 ml-auto">{{ formatRelativeDate(wh.recebido_em) }}</span>
             </div>
-            <p class="text-xs text-gray-600 dark:text-gray-400 mt-1 truncate font-mono">
+            <p class="text-xs text-slate-600 dark:text-slate-400 mt-1 truncate font-mono">
               {{ wh.erro ?? 'Falha no processamento' }}
             </p>
           </li>

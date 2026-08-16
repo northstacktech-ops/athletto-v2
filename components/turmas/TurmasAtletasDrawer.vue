@@ -44,7 +44,7 @@
         <UiEmptyState v-else-if="atletas.length === 0" title="Nenhum atleta" description="Cadastre atletas primeiro." size="sm"/>
         <UiEmptyState v-else-if="filtrados.length === 0" title="Nenhum atleta encontrado" description="Ajuste a busca ou o filtro." size="sm"/>
 
-        <ul v-else class="flex-1 overflow-y-auto divide-y divide-slate-100 dark:divide-white/[0.07]">
+        <ul v-else class="flex-1 overflow-y-auto scrollbar-slim pr-1 divide-y divide-slate-100 dark:divide-white/[0.07]">
           <li v-for="a in filtrados" :key="a.id" class="flex items-center gap-3 px-5 py-2.5 cursor-pointer hover:bg-slate-50 dark:hover:bg-white/[0.02]" @click="toggle(a.id)">
             <input
               type="checkbox"

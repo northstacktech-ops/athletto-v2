@@ -179,7 +179,7 @@
 
           <UiEmptyState v-if="eventosDoDia.length === 0" size="sm" title="Sem eventos" description="Nada agendado neste dia." />
 
-          <ul v-else class="flex-1 overflow-y-auto divide-y divide-slate-100 dark:divide-white/[0.06]">
+          <ul v-else class="flex-1 overflow-y-auto scrollbar-slim pr-1 divide-y divide-slate-100 dark:divide-white/[0.06]">
             <li
               v-for="e in eventosDoDia"
               :key="e.id"

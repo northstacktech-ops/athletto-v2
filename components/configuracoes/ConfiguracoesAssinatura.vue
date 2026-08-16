@@ -81,6 +81,10 @@ import { nomePlano, precoPlano, PLANO_LIMITES, type Clube } from '~/types'
 const { clube } = useAuth()
 const trial = useTrial()
 
+// Passado pra UiPlanosComparativo desabilitar o botão do plano em geração —
+// aqui a "geração" é só a navegação pra /assinar, então fica sempre null.
+const planoGerando = ref<Clube['plano'] | null>(null)
+
 function onAssinar(plano: Clube['plano']) {
   navigateTo(`/assinar?plano=${plano}`)
 }

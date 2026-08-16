@@ -55,6 +55,15 @@
   }
 }
 
+/* Selects: `.form-input`/utilitários px-3 sempre vencem o padding-right
+   definido em @layer base (classe tem mais especificidade que o seletor
+   `select` puro — o @layer do Tailwind v3 é só organizacional, não muda
+   especificidade real) — sem espaço reservado, o texto/seta ficam colados
+   na borda. !important garante que essa regra vale em qualquer select do
+   app sem precisar tocar os ~25 lugares que usam .form-input/px-3.
+   Alinha o padding esquerdo com .input-base (14px) de quebra. */
+select { padding-left: 0.875rem !important; padding-right: 2.25rem !important; }
+
 /* ── Scrollbar ──────────────────────────────────────────────── */
 .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }

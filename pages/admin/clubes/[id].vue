@@ -11,26 +11,26 @@
 
     <template v-else>
       <!-- ── Header ──────────────────────────────────────────── -->
-      <div class="bg-white dark:bg-surface-elevated-dark rounded-xl border border-gray-200 dark:border-white/[0.10] p-5">
+      <div class="card-base p-5">
         <div class="flex items-start gap-4 flex-wrap">
           <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-extrabold text-white shrink-0" style="background-color: #3d5afe;">
             {{ getIniciais(clube.nome) }}
           </div>
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2 flex-wrap">
-              <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ clube.nome }}</h1>
+              <h1 class="page-title">{{ clube.nome }}</h1>
               <span class="px-2 py-0.5 rounded-md text-xs font-semibold capitalize" :class="planoBadge(clube.plano)">{{ nomePlano(clube.plano) }}</span>
               <span class="inline-flex items-center gap-1.5 text-xs font-medium" :class="statusTexto">
                 <span class="w-1.5 h-1.5 rounded-full" :class="statusDot"/>
                 {{ statusLabel }}
               </span>
             </div>
-            <p class="text-sm text-gray-500 mt-1">{{ clube.slug }} · {{ clube.modalidade ?? 'sem modalidade' }} · {{ clube.email ?? '—' }}</p>
-            <p class="text-xs text-gray-400 mt-0.5">CNPJ {{ clube.cnpj ?? '—' }} · criado em {{ formatDate(clube.criado_em.slice(0,10)) }}</p>
+            <p class="text-sm text-slate-500 mt-1">{{ clube.slug }} · {{ clube.modalidade ?? 'sem modalidade' }} · {{ clube.email ?? '—' }}</p>
+            <p class="text-xs text-slate-400 mt-0.5">CNPJ {{ clube.cnpj ?? '—' }} · criado em {{ formatDate(clube.criado_em.slice(0,10)) }}</p>
           </div>
           <div class="flex items-center gap-2">
             <button
-              class="px-3 py-2 rounded-lg text-sm font-semibold border border-gray-200 dark:border-white/[0.10] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/[0.05]"
+              class="px-3 py-2 rounded-lg text-sm font-semibold border border-slate-200 dark:border-white/[0.10] text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/[0.05]"
               @click="abrirVoucher = true"
             >
               + Voucher
@@ -55,22 +55,51 @@
 
       <!-- ── KPIs do clube ───────────────────────────────────── -->
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <AdminKpiCard label="Atletas" :value="String(atletas.length)" icon="athletes"/>
-        <AdminKpiCard label="Gestores" :value="String(gestores.length)" icon="groups"/>
-        <AdminKpiCard label="MRR" :value="formatCurrency(assinatura?.valor_mensal ?? 0)" icon="financial" accent="#22c55e"/>
-        <AdminKpiCard label="Vouchers ativos" :value="String(vouchersAtivos.length)" icon="gift" accent="#f97316"/>
+        <UiKpiPastel density="compact" tone="brand" label="Atletas" :value="String(atletas.length)">
+          <template #icon>
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+            </svg>
+          </template>
+        </UiKpiPastel>
+        <UiKpiPastel density="compact" tone="brand" label="Gestores" :value="String(gestores.length)">
+          <template #icon>
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2"/>
+              <path d="M5 11V9a2 2 0 012-2h10a2 2 0 012 2v2"/>
+            </svg>
+          </template>
+        </UiKpiPastel>
+        <UiKpiPastel density="compact" tone="emerald" label="MRR" :value="formatCurrency(assinatura?.valor_mensal ?? 0)">
+          <template #icon>
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+            </svg>
+          </template>
+        </UiKpiPastel>
+        <UiKpiPastel density="compact" tone="amber" label="Vouchers ativos" :value="String(vouchersAtivos.length)">
+          <template #icon>
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="7" width="20" height="5" rx="1"/>
+              <path d="M12 7v15M20 12v10H4V12"/>
+              <path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/>
+            </svg>
+          </template>
+        </UiKpiPastel>
       </div>
 
       <!-- ── Assinatura ──────────────────────────────────────── -->
-      <div class="bg-white dark:bg-surface-elevated-dark rounded-xl border border-gray-200 dark:border-white/[0.10] p-5">
+      <div class="card-base p-5">
         <div class="flex items-center justify-between mb-4">
-          <h2 class="text-base font-bold text-gray-900 dark:text-white">Assinatura</h2>
+          <h2 class="card-title">Assinatura</h2>
 
           <!-- Alterar plano inline -->
           <div class="flex items-center gap-2">
             <select
               v-model="novoPlano"
-              class="text-sm border border-gray-200 dark:border-white/[0.10] rounded-lg px-3 py-1.5 bg-white dark:bg-surface-elevated-dark text-gray-700 dark:text-gray-300"
+              class="text-sm border border-slate-200 dark:border-white/[0.10] rounded-lg px-3 py-1.5 bg-white dark:bg-surface-elevated-dark text-slate-700 dark:text-slate-300"
             >
               <option value="basico">Base</option>
               <option value="intermediario">Pro</option>
@@ -88,65 +117,65 @@
 
         <div v-if="assinatura" class="grid grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
           <div>
-            <p class="text-gray-400">Status</p>
-            <p class="font-semibold text-gray-900 dark:text-white capitalize">{{ assinatura.status }}</p>
+            <p class="text-slate-400">Status</p>
+            <p class="font-semibold text-slate-900 dark:text-white capitalize">{{ assinatura.status }}</p>
           </div>
           <div>
-            <p class="text-gray-400">Trial</p>
-            <p class="font-semibold text-gray-900 dark:text-white">
+            <p class="text-slate-400">Trial</p>
+            <p class="font-semibold text-slate-900 dark:text-white">
               {{ formatDate(assinatura.trial_inicio) }} → {{ formatDate(assinatura.trial_fim) }}
             </p>
           </div>
           <div>
-            <p class="text-gray-400">Ativada em</p>
-            <p class="font-semibold text-gray-900 dark:text-white">
+            <p class="text-slate-400">Ativada em</p>
+            <p class="font-semibold text-slate-900 dark:text-white">
               {{ assinatura.ativada_em ? formatDate(assinatura.ativada_em) : '—' }}
             </p>
           </div>
           <div>
-            <p class="text-gray-400">Próxima cobrança</p>
-            <p class="font-semibold text-gray-900 dark:text-white">
+            <p class="text-slate-400">Próxima cobrança</p>
+            <p class="font-semibold text-slate-900 dark:text-white">
               {{ assinatura.proxima_cobranca ? formatDate(assinatura.proxima_cobranca) : '—' }}
             </p>
           </div>
           <div>
-            <p class="text-gray-400">Valor mensal</p>
-            <p class="font-semibold text-gray-900 dark:text-white">{{ formatCurrency(assinatura.valor_mensal) }}</p>
+            <p class="text-slate-400">Valor mensal</p>
+            <p class="font-semibold text-slate-900 dark:text-white">{{ formatCurrency(assinatura.valor_mensal) }}</p>
           </div>
           <div>
-            <p class="text-gray-400">Dias de voucher aplicados</p>
-            <p class="font-semibold text-gray-900 dark:text-white">{{ assinatura.dias_voucher_aplicados }}</p>
+            <p class="text-slate-400">Dias de voucher aplicados</p>
+            <p class="font-semibold text-slate-900 dark:text-white">{{ assinatura.dias_voucher_aplicados }}</p>
           </div>
           <div v-if="assinatura.cancelada_em">
-            <p class="text-gray-400">Cancelada em</p>
-            <p class="font-semibold text-gray-900 dark:text-white">{{ formatDate(assinatura.cancelada_em) }}</p>
+            <p class="text-slate-400">Cancelada em</p>
+            <p class="font-semibold text-slate-900 dark:text-white">{{ formatDate(assinatura.cancelada_em) }}</p>
           </div>
           <div v-if="assinatura.motivo_cancelamento">
-            <p class="text-gray-400">Motivo</p>
-            <p class="font-semibold text-gray-900 dark:text-white">{{ assinatura.motivo_cancelamento }}</p>
+            <p class="text-slate-400">Motivo</p>
+            <p class="font-semibold text-slate-900 dark:text-white">{{ assinatura.motivo_cancelamento }}</p>
           </div>
         </div>
       </div>
 
       <!-- ── Vouchers do clube ───────────────────────────────── -->
-      <div class="bg-white dark:bg-surface-elevated-dark rounded-xl border border-gray-200 dark:border-white/[0.10] overflow-hidden">
-        <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-white/[0.07]">
-          <h2 class="text-base font-bold text-gray-900 dark:text-white">Vouchers ({{ vouchersClube.length }})</h2>
+      <div class="card-base overflow-hidden">
+        <div class="card-header">
+          <h2 class="card-title">Vouchers ({{ vouchersClube.length }})</h2>
         </div>
 
         <UiEmptyState v-if="vouchersClube.length === 0" size="sm" title="Sem vouchers" description="Este clube ainda não recebeu nenhum voucher."/>
 
-        <ul v-else class="divide-y divide-gray-100 dark:divide-white/[0.07]">
+        <ul v-else class="divide-y divide-slate-100 dark:divide-white/[0.07]">
           <li v-for="v in vouchersClube" :key="v.id" class="px-5 py-3 flex items-center gap-3">
             <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
-                 :class="v.status === 'ativo' ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-gray-500'">
+                 :class="v.status === 'ativo' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-500'">
               <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 12v10H4V12M22 7H2v5h20V7zM12 22V7"/></svg>
             </div>
             <div class="flex-1 min-w-0">
-              <p class="text-sm font-semibold text-gray-900 dark:text-white">
+              <p class="text-sm font-semibold text-slate-900 dark:text-white">
                 +{{ v.dias_concedidos }} dias · {{ v.tipo }}
               </p>
-              <p class="text-xs text-gray-400 truncate">{{ v.motivo }}</p>
+              <p class="text-xs text-slate-400 truncate">{{ v.motivo }}</p>
             </div>
             <span class="text-xs uppercase tracking-wider font-bold" :class="voucherStatusCor(v.status)">
               {{ v.status }}
@@ -229,8 +258,8 @@ const statusDot = computed(() => {
     case 'trial': return 'bg-amber-400'
     case 'inadimplente': return 'bg-red-500'
     case 'suspensa': return 'bg-orange-500'
-    case 'cancelada': return 'bg-gray-400'
-    default: return 'bg-gray-300'
+    case 'cancelada': return 'bg-slate-400'
+    default: return 'bg-slate-300'
   }
 })
 const statusTexto = computed(() => {
@@ -239,14 +268,14 @@ const statusTexto = computed(() => {
     case 'trial': return 'text-amber-600 dark:text-amber-400'
     case 'inadimplente': return 'text-red-600 dark:text-red-400'
     case 'suspensa': return 'text-orange-600 dark:text-orange-400'
-    case 'cancelada': return 'text-gray-500'
-    default: return 'text-gray-500'
+    case 'cancelada': return 'text-slate-500'
+    default: return 'text-slate-500'
   }
 })
 
 function planoBadge(p: Clube['plano']) {
   switch (p) {
-    case 'basico': return 'bg-gray-100 text-gray-700 dark:bg-white/[0.06] dark:text-gray-300'
+    case 'basico': return 'bg-slate-100 text-slate-700 dark:bg-white/[0.06] dark:text-slate-300'
     case 'intermediario': return 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
     case 'profissional': return 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
   }
@@ -254,8 +283,8 @@ function planoBadge(p: Clube['plano']) {
 function voucherStatusCor(s: Voucher['status']) {
   switch (s) {
     case 'ativo': return 'text-emerald-600'
-    case 'consumido': return 'text-gray-400'
-    case 'expirado': return 'text-gray-400'
+    case 'consumido': return 'text-slate-400'
+    case 'expirado': return 'text-slate-400'
     case 'revogado': return 'text-red-500'
   }
 }

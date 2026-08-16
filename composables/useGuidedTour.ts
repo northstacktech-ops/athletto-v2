@@ -20,6 +20,9 @@ export interface TourStep {
 
 const HALO_PADDING = 6
 const TOOLTIP_WIDTH = 320
+// Estimativa de altura do card (título + descrição + botões) — só usada pra
+// decidir de que lado colocar o tooltip, não define a altura real renderizada.
+const TOOLTIP_HEIGHT_ESTIMATE = 220
 const TOOLTIP_MARGIN = 24
 
 export function useGuidedTour(doneKey: string, steps: TourStep[]) {
@@ -42,15 +45,50 @@ export function useGuidedTour(doneKey: string, steps: TourStep[]) {
     }
   })
 
+  // Escolhe o lado com espaço de sobra (direita → esquerda → abaixo → acima)
+  // em vez de sempre tentar a direita e só encaixar na viewport — sem isso,
+  // alvos perto da borda direita (ex.: botão "Novo" no topo) faziam o clamp
+  // horizontal empurrar o tooltip pra cima do próprio elemento marcado.
   const tooltipStyle = computed(() => {
-    if (!highlightBox.value) {
+    const box = highlightBox.value
+    if (!box) {
       return { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }
     }
-    const left = highlightBox.value.right + TOOLTIP_MARGIN
-    const maxLeft = window.innerWidth - TOOLTIP_WIDTH - 16
+    const vw = window.innerWidth
+    const vh = window.innerHeight
+
+    const espacoDireita = vw - box.right
+    const espacoEsquerda = box.left
+    const espacoAbaixo = vh - box.bottom
+    const espacoAcima = box.top
+
+    let left: number
+    let top: number
+
+    if (espacoDireita >= TOOLTIP_WIDTH + TOOLTIP_MARGIN) {
+      left = box.right + TOOLTIP_MARGIN
+      top = box.top
+    } else if (espacoEsquerda >= TOOLTIP_WIDTH + TOOLTIP_MARGIN) {
+      left = box.left - TOOLTIP_WIDTH - TOOLTIP_MARGIN
+      top = box.top
+    } else if (espacoAbaixo >= TOOLTIP_HEIGHT_ESTIMATE + TOOLTIP_MARGIN) {
+      left = box.left
+      top = box.bottom + TOOLTIP_MARGIN
+    } else if (espacoAcima >= TOOLTIP_HEIGHT_ESTIMATE + TOOLTIP_MARGIN) {
+      left = box.left
+      top = box.top - TOOLTIP_HEIGHT_ESTIMATE - TOOLTIP_MARGIN
+    } else {
+      // Nenhum lado tem espaço de sobra — mantém o comportamento antigo
+      // (tenta a direita) como último recurso, só com o clamp final abaixo.
+      left = box.right + TOOLTIP_MARGIN
+      top = box.top
+    }
+
+    const maxLeft = vw - TOOLTIP_WIDTH - 16
+    const maxTop = vh - TOOLTIP_HEIGHT_ESTIMATE - 16
     return {
-      top: `${Math.max(16, highlightBox.value.top - 8)}px`,
-      left: `${Math.min(left, maxLeft)}px`,
+      top: `${Math.min(Math.max(16, top), Math.max(16, maxTop))}px`,
+      left: `${Math.min(Math.max(16, left), Math.max(16, maxLeft))}px`,
     }
   })
 

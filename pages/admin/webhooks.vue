@@ -3,8 +3,8 @@
 
     <div class="flex items-end justify-between gap-4 flex-wrap">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white leading-tight">Webhooks</h1>
-        <p class="text-sm text-gray-400 dark:text-gray-500 mt-0.5">
+        <h1 class="page-title">Webhooks</h1>
+        <p class="page-description">
           Eventos recebidos, validação HMAC e estado do processamento
         </p>
       </div>
@@ -14,8 +14,8 @@
           :key="s || 'all'"
           class="px-3 py-1.5 rounded-lg text-sm font-semibold border transition-colors"
           :class="filtro === s
-            ? 'bg-gray-900 text-white border-gray-900 dark:bg-white dark:text-gray-900 dark:border-white'
-            : 'bg-white dark:bg-surface-elevated-dark border-gray-200 dark:border-white/[0.10] text-gray-700 dark:text-gray-300'"
+            ? 'bg-slate-900 text-white border-slate-900 dark:bg-white dark:text-slate-900 dark:border-white'
+            : 'bg-white dark:bg-surface-elevated-dark border-slate-200 dark:border-white/[0.10] text-slate-700 dark:text-slate-300'"
           @click="filtro = s"
         >
           {{ s === '' ? 'Todos' : s.charAt(0).toUpperCase() + s.slice(1) }}
@@ -33,25 +33,25 @@
       <details
         v-for="wh in filtrados"
         :key="wh.id"
-        class="bg-white dark:bg-surface-elevated-dark rounded-xl border border-gray-200 dark:border-white/[0.10] overflow-hidden group"
+        class="card-base overflow-hidden group"
       >
         <summary class="px-5 py-3 flex items-center gap-3 cursor-pointer list-none">
           <span class="px-1.5 py-0.5 rounded text-xs font-bold uppercase tracking-wider" :class="statusCor(wh.status)">
             {{ wh.status }}
           </span>
-          <span class="px-1.5 py-0.5 rounded text-xs font-bold uppercase tracking-wider bg-gray-100 text-gray-700 dark:bg-white/[0.05] dark:text-gray-300">
+          <span class="px-1.5 py-0.5 rounded text-xs font-bold uppercase tracking-wider bg-slate-100 text-slate-700 dark:bg-white/[0.05] dark:text-slate-300">
             {{ wh.evento }}
           </span>
           <span v-if="!wh.hmac_valido" class="px-1.5 py-0.5 rounded text-xs font-bold uppercase tracking-wider bg-red-50 text-red-600">
             HMAC inválido
           </span>
-          <code class="text-xs text-gray-500 font-mono truncate">{{ wh.payment_id ?? '—' }}</code>
-          <span class="ml-auto text-xs text-gray-400">{{ formatDateTime(wh.recebido_em) }}</span>
-          <svg class="w-4 h-4 text-gray-400 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          <code class="text-xs text-slate-500 font-mono truncate">{{ wh.payment_id ?? '—' }}</code>
+          <span class="ml-auto text-xs text-slate-400">{{ formatDateTime(wh.recebido_em) }}</span>
+          <svg class="w-4 h-4 text-slate-400 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
         </summary>
-        <div class="border-t border-gray-100 dark:border-white/[0.06] px-5 py-3 space-y-2">
+        <div class="border-t border-slate-100 dark:border-white/[0.06] px-5 py-3 space-y-2">
           <p v-if="wh.erro" class="text-xs text-red-600 dark:text-red-400 font-mono">{{ wh.erro }}</p>
-          <pre class="text-xs text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-white/[0.02] rounded-lg p-3 overflow-x-auto">{{ JSON.stringify(wh.payload, null, 2) }}</pre>
+          <pre class="text-xs text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-white/[0.02] rounded-lg p-3 overflow-x-auto">{{ JSON.stringify(wh.payload, null, 2) }}</pre>
         </div>
       </details>
     </div>
@@ -88,7 +88,7 @@ function statusCor(s: WebhookLog['status']) {
     case 'recebido': return 'bg-blue-50 text-blue-700'
     case 'processado': return 'bg-emerald-50 text-emerald-700'
     case 'erro': return 'bg-red-50 text-red-700'
-    case 'ignorado': return 'bg-gray-100 text-gray-600'
+    case 'ignorado': return 'bg-slate-100 text-slate-600'
   }
 }
 </script>

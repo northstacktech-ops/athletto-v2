@@ -2,8 +2,8 @@
   <div class="space-y-4 animate-fade-in">
 
     <div>
-      <h1 class="text-2xl font-bold text-gray-900 dark:text-white leading-tight">Configurações do sistema</h1>
-      <p class="text-sm text-gray-400 dark:text-gray-500 mt-0.5">Parâmetros globais — afetam todos os clubes</p>
+      <h1 class="page-title">Configurações do sistema</h1>
+      <p class="page-description">Parâmetros globais — afetam todos os clubes</p>
     </div>
 
     <div v-if="loading" class="space-y-3">
@@ -73,8 +73,8 @@
         </AdminSettingsField>
       </AdminSettingsSection>
 
-      <div class="sticky bottom-4 bg-white dark:bg-surface-elevated-dark border border-gray-200 dark:border-white/[0.10] rounded-xl p-3 flex items-center justify-between shadow-lg">
-        <p class="text-xs text-gray-500">
+      <div class="card-base sticky bottom-4 p-3 flex items-center justify-between shadow-lg">
+        <p class="text-xs text-slate-500">
           Última alteração {{ formatDateTime(cfg.atualizado_em) }}
         </p>
         <button class="px-4 py-2 rounded-lg text-sm font-semibold text-white" style="background-color: #3d5afe;" :disabled="salvando" @click="salvar">
@@ -128,7 +128,7 @@ async function salvar() {
 
 <style scoped>
 .setting-input {
-  @apply px-3 py-2 rounded-lg border border-gray-200 dark:border-white/[0.10]
+  @apply px-3 py-2 rounded-lg border border-slate-200 dark:border-white/[0.10]
          bg-white dark:bg-surface-canvas-dark text-sm w-full
          focus:outline-none focus:border-brand-500;
 }

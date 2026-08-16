@@ -4,32 +4,32 @@
     <!-- Header -->
     <div class="flex items-end justify-between gap-4 flex-wrap">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white leading-tight">Vouchers</h1>
-        <p class="text-sm text-gray-400 dark:text-gray-500 mt-0.5">
+        <h1 class="page-title">Vouchers</h1>
+        <p class="page-description">
           {{ ativos }} ativos · {{ todos.length }} totais
         </p>
       </div>
     </div>
 
     <!-- Filtros -->
-    <div class="bg-white dark:bg-surface-elevated-dark rounded-xl border border-gray-200 dark:border-white/[0.10] p-3">
+    <div class="card-base p-3">
       <div class="flex flex-wrap items-center gap-2">
         <div class="relative flex-1 min-w-[200px]">
           <input
             v-model="busca"
             type="text"
             placeholder="Buscar por clube ou motivo..."
-            class="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-white/[0.10] bg-white dark:bg-surface-canvas-dark text-sm focus:outline-none focus:border-brand-500"
+            class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-white/[0.10] bg-white dark:bg-surface-canvas-dark text-sm focus:outline-none focus:border-brand-500"
           />
         </div>
-        <select v-model="filtroStatus" class="px-3 py-2 rounded-lg border border-gray-200 dark:border-white/[0.10] bg-white dark:bg-surface-canvas-dark text-sm font-medium">
+        <select v-model="filtroStatus" class="px-3 py-2 rounded-lg border border-slate-200 dark:border-white/[0.10] bg-white dark:bg-surface-canvas-dark text-sm font-medium">
           <option value="">Todos os status</option>
           <option value="ativo">Ativos</option>
           <option value="consumido">Consumidos</option>
           <option value="expirado">Expirados</option>
           <option value="revogado">Revogados</option>
         </select>
-        <select v-model="filtroTipo" class="px-3 py-2 rounded-lg border border-gray-200 dark:border-white/[0.10] bg-white dark:bg-surface-canvas-dark text-sm font-medium">
+        <select v-model="filtroTipo" class="px-3 py-2 rounded-lg border border-slate-200 dark:border-white/[0.10] bg-white dark:bg-surface-canvas-dark text-sm font-medium">
           <option value="">Todos os tipos</option>
           <option value="trial">Trial</option>
           <option value="extensao">Extensão</option>
@@ -40,31 +40,31 @@
     </div>
 
     <!-- Lista -->
-    <div class="bg-white dark:bg-surface-elevated-dark rounded-xl border border-gray-200 dark:border-white/[0.10] overflow-hidden">
+    <div class="card-base overflow-hidden">
       <div v-if="loading" class="p-5 space-y-3">
         <div v-for="i in 5" :key="i" class="skeleton h-14 rounded-lg"/>
       </div>
 
       <UiEmptyState v-else-if="filtrados.length === 0" title="Nenhum voucher" description="Vouchers aparecerão aqui quando você aplicar um."/>
 
-      <ul v-else class="divide-y divide-gray-100 dark:divide-white/[0.07]">
-        <li v-for="v in filtrados" :key="v.id" class="px-5 py-3 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-white/[0.02]">
+      <ul v-else class="divide-y divide-slate-100 dark:divide-white/[0.07]">
+        <li v-for="v in filtrados" :key="v.id" class="px-5 py-3 flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-white/[0.02]">
           <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-               :class="v.status === 'ativo' ? 'bg-emerald-50' : 'bg-gray-100 dark:bg-white/[0.05]'">
-            <svg class="w-4 h-4" :class="v.status === 'ativo' ? 'text-emerald-600' : 'text-gray-400'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+               :class="v.status === 'ativo' ? 'bg-emerald-50' : 'bg-slate-100 dark:bg-white/[0.05]'">
+            <svg class="w-4 h-4" :class="v.status === 'ativo' ? 'text-emerald-600' : 'text-slate-400'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M20 12v10H4V12M22 7H2v5h20V7zM12 22V7"/>
             </svg>
           </div>
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2 flex-wrap">
-              <NuxtLink :to="`/admin/clubes/${v.clube_id}`" class="font-semibold text-gray-900 dark:text-white hover:underline">
+              <NuxtLink :to="`/admin/clubes/${v.clube_id}`" class="font-semibold text-slate-900 dark:text-white hover:underline">
                 {{ v.clube?.nome ?? 'Clube' }}
               </NuxtLink>
               <span class="px-1.5 py-0.5 rounded text-xs font-bold uppercase tracking-wider" :class="tipoCor(v.tipo)">{{ v.tipo }}</span>
               <span class="text-xs font-bold" :class="statusCor(v.status)">+{{ v.dias_concedidos }}d</span>
             </div>
-            <p class="text-xs text-gray-500 truncate">{{ v.motivo }}</p>
-            <p class="text-xs text-gray-400 mt-0.5">
+            <p class="text-xs text-slate-500 truncate">{{ v.motivo }}</p>
+            <p class="text-xs text-slate-400 mt-0.5">
               Por {{ v.emissor?.nome }} · {{ formatRelativeDate(v.aplicado_em) }}
               <template v-if="v.revogado_em"> · revogado em {{ formatDate(v.revogado_em.slice(0,10)) }}</template>
             </p>
@@ -147,8 +147,8 @@ function tipoCor(t: Voucher['tipo']) {
 function statusCor(s: Voucher['status']) {
   switch (s) {
     case 'ativo': return 'text-emerald-600'
-    case 'consumido': return 'text-gray-500'
-    case 'expirado': return 'text-gray-400'
+    case 'consumido': return 'text-slate-500'
+    case 'expirado': return 'text-slate-400'
     case 'revogado': return 'text-red-500'
   }
 }

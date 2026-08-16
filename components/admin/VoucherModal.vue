@@ -4,16 +4,16 @@
       <div class="absolute inset-0 bg-black/60" />
       <div class="relative w-full max-w-xl bg-white dark:bg-surface-elevated-dark rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
 
-        <div class="px-6 py-5 border-b border-gray-100 dark:border-white/[0.07]">
-          <h2 class="text-lg font-bold text-gray-900 dark:text-white">Aplicar voucher</h2>
-          <p class="text-sm text-gray-500 mt-0.5">Conceder acesso/extensão para {{ clube.nome }}</p>
+        <div class="px-6 py-5 border-b border-slate-100 dark:border-white/[0.07]">
+          <h2 class="text-lg font-bold text-slate-900 dark:text-white">Aplicar voucher</h2>
+          <p class="text-sm text-slate-500 mt-0.5">Conceder acesso/extensão para {{ clube.nome }}</p>
         </div>
 
         <form class="px-6 py-5 space-y-4 overflow-y-auto" @submit.prevent="aplicar">
 
           <div>
-            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Tipo</label>
-            <select v-model="form.tipo" class="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-white/[0.10] bg-white dark:bg-surface-canvas-dark text-sm">
+            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Tipo</label>
+            <select v-model="form.tipo" class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-white/[0.10] bg-white dark:bg-surface-canvas-dark text-sm">
               <option value="trial">Extensão de trial</option>
               <option value="extensao">Extensão de assinatura</option>
               <option value="cortesia">Cortesia / Compensação</option>
@@ -22,8 +22,8 @@
           </div>
 
           <div>
-            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
-              Dias concedidos <span class="text-gray-400 font-normal">({{ form.dias }} dias)</span>
+            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+              Dias concedidos <span class="text-slate-400 font-normal">({{ form.dias }} dias)</span>
             </label>
             <input
               v-model.number="form.dias"
@@ -32,14 +32,14 @@
               max="365"
               class="w-full"
             />
-            <div class="flex justify-between text-xs text-gray-400 mt-1">
+            <div class="flex justify-between text-xs text-slate-400 mt-1">
               <span>1d</span><span>30d</span><span>90d</span><span>1 ano</span>
             </div>
           </div>
 
           <div v-if="form.tipo === 'upgrade'">
-            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Plano concedido</label>
-            <select v-model="form.plano" class="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-white/[0.10] bg-white dark:bg-surface-canvas-dark text-sm">
+            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Plano concedido</label>
+            <select v-model="form.plano" class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-white/[0.10] bg-white dark:bg-surface-canvas-dark text-sm">
               <option value="basico">Base</option>
               <option value="intermediario">Pro</option>
               <option value="profissional">Elite</option>
@@ -47,29 +47,29 @@
           </div>
 
           <div>
-            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Motivo *</label>
+            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Motivo *</label>
             <input
               v-model="form.motivo"
               type="text"
               required
               maxlength="180"
               placeholder="Ex: Parceria estratégica, compensação por incidente..."
-              class="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-white/[0.10] bg-white dark:bg-surface-canvas-dark text-sm"
+              class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-white/[0.10] bg-white dark:bg-surface-canvas-dark text-sm"
             />
           </div>
 
           <div>
-            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Observações (interno)</label>
+            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Observações (interno)</label>
             <textarea
               v-model="form.observacoes"
               rows="2"
               maxlength="500"
-              class="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-white/[0.10] bg-white dark:bg-surface-canvas-dark text-sm"
+              class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-white/[0.10] bg-white dark:bg-surface-canvas-dark text-sm"
             />
           </div>
 
           <div class="flex justify-end gap-2 pt-2">
-            <button type="button" class="px-4 py-2 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-100" @click="$emit('close')">
+            <button type="button" class="px-4 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-100" @click="$emit('close')">
               Cancelar
             </button>
             <button

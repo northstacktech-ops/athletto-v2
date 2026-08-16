@@ -3,28 +3,61 @@
 
     <div class="flex items-end justify-between gap-4 flex-wrap">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white leading-tight">Financeiro do sistema</h1>
-        <p class="text-sm text-gray-400 dark:text-gray-500 mt-0.5">Receita Athletto, taxas, reembolsos e despesas operacionais</p>
+        <h1 class="page-title">Financeiro do sistema</h1>
+        <p class="page-description">Receita Athletto, taxas, reembolsos e despesas operacionais</p>
       </div>
       <input
         v-model="mes"
         type="month"
-        class="px-3 py-2 rounded-lg border border-gray-200 dark:border-white/[0.10] bg-white dark:bg-surface-canvas-dark text-sm"
+        class="px-3 py-2 rounded-lg border border-slate-200 dark:border-white/[0.10] bg-white dark:bg-surface-canvas-dark text-sm"
       />
     </div>
 
     <!-- KPIs -->
     <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
-      <AdminKpiCard label="Receita bruta" :value="formatCurrency(resumo.receita)" icon="financial" accent="#22c55e"/>
-      <AdminKpiCard label="Taxas (gateway)" :value="formatCurrency(resumo.taxas)" icon="billing" accent="#f97316"/>
-      <AdminKpiCard label="Reembolsos" :value="formatCurrency(resumo.reembolsos)" icon="billing" accent="#ef4444"/>
-      <AdminKpiCard label="Despesas op." :value="formatCurrency(resumo.despesas)" icon="billing" accent="#6b7280"/>
-      <AdminKpiCard label="Líquido" :value="formatCurrency(resumo.liquido)" icon="financial" accent="#3d5afe"/>
+      <UiKpiPastel density="compact" tone="emerald" label="Receita bruta" :value="formatCurrency(resumo.receita)">
+        <template #icon>
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+          </svg>
+        </template>
+      </UiKpiPastel>
+      <UiKpiPastel density="compact" tone="amber" label="Taxas (gateway)" :value="formatCurrency(resumo.taxas)">
+        <template #icon>
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="5" width="20" height="14" rx="2"/>
+            <path d="M2 10h20"/>
+          </svg>
+        </template>
+      </UiKpiPastel>
+      <UiKpiPastel density="compact" tone="rose" label="Reembolsos" :value="formatCurrency(resumo.reembolsos)">
+        <template #icon>
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="5" width="20" height="14" rx="2"/>
+            <path d="M2 10h20"/>
+          </svg>
+        </template>
+      </UiKpiPastel>
+      <UiKpiPastel density="compact" tone="slate" label="Despesas op." :value="formatCurrency(resumo.despesas)">
+        <template #icon>
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="5" width="20" height="14" rx="2"/>
+            <path d="M2 10h20"/>
+          </svg>
+        </template>
+      </UiKpiPastel>
+      <UiKpiPastel density="compact" tone="brand" label="Líquido" :value="formatCurrency(resumo.liquido)">
+        <template #icon>
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+          </svg>
+        </template>
+      </UiKpiPastel>
     </div>
 
     <!-- Filtros + ação -->
     <div class="flex items-center gap-2 flex-wrap">
-      <select v-model="filtroTipo" class="px-3 py-2 rounded-lg border border-gray-200 dark:border-white/[0.10] bg-white dark:bg-surface-canvas-dark text-sm font-medium">
+      <select v-model="filtroTipo" class="px-3 py-2 rounded-lg border border-slate-200 dark:border-white/[0.10] bg-white dark:bg-surface-canvas-dark text-sm font-medium">
         <option value="">Todos os tipos</option>
         <option value="mensalidade_recebida">Mensalidades</option>
         <option value="taxa_gateway">Taxas</option>
@@ -43,7 +76,7 @@
     </div>
 
     <!-- Tabela -->
-    <div class="bg-white dark:bg-surface-elevated-dark rounded-xl border border-gray-200 dark:border-white/[0.10] overflow-hidden">
+    <div class="card-base overflow-hidden">
       <div v-if="loading" class="p-5 space-y-3">
         <div v-for="i in 5" :key="i" class="skeleton h-12 rounded-lg"/>
       </div>
@@ -52,29 +85,29 @@
 
       <div v-else class="overflow-x-auto">
         <table class="min-w-full text-sm">
-          <thead class="bg-gray-50 dark:bg-white/[0.02] border-b border-gray-200 dark:border-white/[0.06]">
+          <thead class="bg-slate-50 dark:bg-white/[0.02] border-b border-slate-200 dark:border-white/[0.06]">
             <tr>
-              <th class="text-left px-5 py-3 font-semibold text-gray-600 dark:text-gray-400">Data</th>
-              <th class="text-left px-3 py-3 font-semibold text-gray-600 dark:text-gray-400">Tipo</th>
-              <th class="text-left px-3 py-3 font-semibold text-gray-600 dark:text-gray-400">Descrição</th>
-              <th class="text-left px-3 py-3 font-semibold text-gray-600 dark:text-gray-400">Clube</th>
-              <th class="text-right px-5 py-3 font-semibold text-gray-600 dark:text-gray-400">Valor</th>
+              <th class="text-left px-5 py-3 font-semibold text-slate-600 dark:text-slate-400">Data</th>
+              <th class="text-left px-3 py-3 font-semibold text-slate-600 dark:text-slate-400">Tipo</th>
+              <th class="text-left px-3 py-3 font-semibold text-slate-600 dark:text-slate-400">Descrição</th>
+              <th class="text-left px-3 py-3 font-semibold text-slate-600 dark:text-slate-400">Clube</th>
+              <th class="text-right px-5 py-3 font-semibold text-slate-600 dark:text-slate-400">Valor</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-100 dark:divide-white/[0.06]">
-            <tr v-for="m in filtradas" :key="m.id" class="hover:bg-gray-50 dark:hover:bg-white/[0.02]">
-              <td class="px-5 py-3 text-gray-500">{{ formatDate(m.data) }}</td>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/[0.06]">
+            <tr v-for="m in filtradas" :key="m.id" class="hover:bg-slate-50 dark:hover:bg-white/[0.02]">
+              <td class="px-5 py-3 text-slate-500">{{ formatDate(m.data) }}</td>
               <td class="px-3 py-3">
                 <span class="px-1.5 py-0.5 rounded text-xs font-bold uppercase tracking-wider" :class="tipoCor(m.tipo)">
                   {{ tipoLabel(m.tipo) }}
                 </span>
               </td>
-              <td class="px-3 py-3 text-gray-700 dark:text-gray-300 max-w-[300px] truncate">{{ m.descricao }}</td>
+              <td class="px-3 py-3 text-slate-700 dark:text-slate-300 max-w-[300px] truncate">{{ m.descricao }}</td>
               <td class="px-3 py-3">
                 <NuxtLink v-if="m.clube_id" :to="`/admin/clubes/${m.clube_id}`" class="text-sm font-semibold hover:underline" style="color: #3d5afe;">
                   {{ m.clube?.nome ?? m.clube_id }}
                 </NuxtLink>
-                <span v-else class="text-gray-400">—</span>
+                <span v-else class="text-slate-400">—</span>
               </td>
               <td class="px-5 py-3 text-right font-bold" :class="valorCor(m.tipo)">
                 {{ sinal(m.tipo) }}{{ formatCurrency(m.valor) }}
@@ -144,7 +177,7 @@ function tipoCor(t: SistemaMovTipo) {
     case 'mensalidade_recebida': return 'bg-emerald-50 text-emerald-700'
     case 'taxa_gateway': return 'bg-orange-50 text-orange-700'
     case 'reembolso': return 'bg-red-50 text-red-700'
-    case 'despesa_operacional': return 'bg-gray-100 text-gray-700'
+    case 'despesa_operacional': return 'bg-slate-100 text-slate-700'
   }
 }
 function valorCor(t: SistemaMovTipo) {
@@ -152,7 +185,7 @@ function valorCor(t: SistemaMovTipo) {
     case 'mensalidade_recebida': return 'text-emerald-600'
     case 'taxa_gateway': return 'text-orange-600'
     case 'reembolso': return 'text-red-600'
-    case 'despesa_operacional': return 'text-gray-700 dark:text-gray-300'
+    case 'despesa_operacional': return 'text-slate-700 dark:text-slate-300'
   }
 }
 function sinal(t: SistemaMovTipo) {

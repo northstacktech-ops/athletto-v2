@@ -22,8 +22,8 @@
     </div>
 
     <!-- Header -->
-    <div class="bg-white dark:bg-surface-elevated-dark rounded-xl border border-slate-200 dark:border-white/[0.10] shadow-card p-6 flex flex-col sm:flex-row sm:items-center gap-4">
-      <TurmasTurmaIcone :icone="turma.icone" :cor="turma.cor" size="lg" class="shrink-0"/>
+    <div class="bg-white dark:bg-surface-elevated-dark rounded-xl border border-slate-200 dark:border-white/[0.10] shadow-card p-4 flex flex-col sm:flex-row sm:items-center gap-4">
+      <TurmasTurmaIcone :icone="turma.icone" :cor="turma.cor" class="shrink-0"/>
       <div class="flex-1 min-w-0">
         <h1 class="text-2xl font-bold text-slate-900 dark:text-white">{{ turma.nome }}</h1>
         <p v-if="turma.descricao" class="text-sm text-slate-500 mt-0.5">{{ turma.descricao }}</p>
@@ -58,24 +58,28 @@
     <!-- KPIs -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
       <UiKpiPastel
+        density="compact"
         tone="violet"
         label="Atletas"
         :value="atletasDaTurma.length"
         :delta="`${bolsistas} com bolsa`"
       />
       <UiKpiPastel
+        density="compact"
         tone="brand"
         label="Mensalidade padrão"
         :value="`R$ ${(turma.valor_mensalidade_padrao ?? 0).toFixed(0)}`"
         delta="Valor base"
       />
       <UiKpiPastel
+        density="compact"
         tone="emerald"
         label="Receita estimada"
         :value="formatCurrency(receitaEstimada)"
         :delta="`Média ${formatCurrency(mensalidadeMedia)} / atleta`"
       />
       <UiKpiPastel
+        density="compact"
         :tone="freqTone"
         label="Presença média"
         :value="presencaMedia === null ? '—' : `${presencaMedia}%`"
@@ -90,7 +94,7 @@
         <UiTabsPill v-model="aba" :tabs="tabs" />
       </div>
 
-      <div class="p-6">
+      <div class="p-3">
         <!-- VISÃO -->
         <div v-if="aba === 'visao'" class="space-y-6">
           <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
@@ -160,16 +164,19 @@
         <div v-else-if="aba === 'frequencia'" class="space-y-6">
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <UiKpiPastel
+              density="compact"
               :tone="freqTone"
               label="Presença média"
               :value="presencaMedia === null ? '—' : `${presencaMedia}%`"
             />
             <UiKpiPastel
+              density="compact"
               tone="brand"
               label="Treinos registrados"
               :value="datasRegistradas.length"
             />
             <UiKpiPastel
+              density="compact"
               tone="amber"
               label="Em alerta"
               :value="atletasEmAlerta"
@@ -207,25 +214,28 @@
         <!-- FINANCEIRO -->
         <div v-else-if="aba === 'financeiro'" class="space-y-6">
           <div v-if="caixinhaId" class="flex justify-end">
-            <NuxtLink :to="`/financeiro#caixinhas`" class="text-xs font-semibold text-brand-600 hover:text-brand-700 dark:text-brand-400 inline-flex items-center gap-1">
+            <NuxtLink :to="`/financeiro/caixinhas/${caixinhaId}`" class="text-xs font-semibold text-brand-600 hover:text-brand-700 dark:text-brand-400 inline-flex items-center gap-1">
               Ver caixinha da mensalidade
               <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
             </NuxtLink>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <UiKpiPastel
+              density="compact"
               tone="emerald"
               label="Receita mensal estimada"
               :value="formatCurrency(receitaEstimada)"
               :delta="`${atletasDaTurma.length} atletas`"
             />
             <UiKpiPastel
+              density="compact"
               tone="amber"
               label="Bolsas ativas"
               :value="bolsistas"
               delta="Valor personalizado"
             />
             <UiKpiPastel
+              density="compact"
               tone="brand"
               label="Mensalidade média"
               :value="formatCurrency(mensalidadeMedia)"
@@ -283,7 +293,7 @@
                 </div>
 
                 <!-- Linha de edição inline -->
-                <div v-else class="py-3 space-y-3 bg-slate-50 dark:bg-white/[0.02] -mx-6 px-6 border-y border-brand-200 dark:border-brand-500/30">
+                <div v-else class="py-3 space-y-3 bg-slate-50 dark:bg-white/[0.02] -mx-3 px-3 border-y border-brand-200 dark:border-brand-500/30">
                   <div class="flex items-center gap-2">
                     <UiAvatar :src="a.foto_url" :nome="a.nome" :numero="a.numero_camisa" size="sm" />
                     <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ a.nome }}</p>

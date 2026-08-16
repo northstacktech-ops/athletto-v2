@@ -1,0 +1,508 @@
+<template>
+  <div v-if="loading" class="space-y-4 animate-fade-in">
+    <div class="skeleton h-10 w-40 rounded-lg" />
+    <div class="skeleton h-[420px] rounded-xl" />
+  </div>
+
+  <UiEmptyState
+    v-else-if="!caixinha"
+    title="Caixinha não encontrada"
+    description="Verifique o link ou volte à lista."
+  />
+
+  <div v-else class="space-y-4 animate-fade-in">
+    <!-- Breadcrumb -->
+    <div class="flex items-center gap-2 text-sm">
+      <NuxtLink to="/financeiro#caixinhas" class="text-slate-500 hover:text-slate-900 dark:hover:text-white font-medium inline-flex items-center gap-1">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        Caixinhas
+      </NuxtLink>
+      <span class="text-slate-300">/</span>
+      <span class="text-slate-900 dark:text-white font-semibold truncate">{{ caixinha.nome }}</span>
+    </div>
+
+    <!-- Header -->
+    <div class="bg-white dark:bg-surface-elevated-dark rounded-xl border border-slate-200 dark:border-white/[0.10] shadow-card p-4">
+      <div class="flex items-start justify-between gap-3 flex-wrap">
+        <div class="min-w-0">
+          <h1 class="text-2xl font-bold text-slate-900 dark:text-white truncate">{{ caixinha.nome }}</h1>
+          <p class="text-xs text-slate-500 mt-0.5">Criada {{ formatDate(caixinha.criada_em.slice(0, 10)) }}</p>
+        </div>
+      </div>
+
+      <!-- Ajustar valor padrão (espelho) -->
+      <div v-if="planejamentoId" class="mt-3">
+        <button
+          v-if="!editandoValor"
+          class="text-xs font-semibold text-brand-700 dark:text-brand-400 hover:underline inline-flex items-center gap-1"
+          @click="abrirEditarValor"
+        >
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Ajustar valor padrão
+        </button>
+        <div v-else class="rounded-lg border border-brand-300 dark:border-brand-500/40 p-3 space-y-2">
+          <p class="text-xs font-semibold text-slate-700 dark:text-slate-200">Novo valor padrão (mensalidade)</p>
+          <div class="flex items-center gap-2">
+            <div class="relative w-32">
+              <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-medium">R$</span>
+              <input v-model.number="novoValor" type="number" min="0" step="0.01" class="form-input pl-7 text-sm py-1.5"/>
+            </div>
+            <button class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-brand-600 hover:bg-brand-700 text-white disabled:opacity-50" :disabled="salvandoValor" @click="confirmarValor">
+              {{ salvandoValor ? 'Aplicando...' : 'Aplicar' }}
+            </button>
+            <button class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/[0.06]" @click="editandoValor = false">
+              Cancelar
+            </button>
+          </div>
+          <p class="text-[11px] text-slate-500 leading-relaxed">
+            Atualiza só as cobranças <b>futuras e não pagas</b> dos atletas no valor padrão.
+            Diferenciados/isentos e cobranças pagas não mudam.
+          </p>
+        </div>
+      </div>
+
+      <!-- Adicionar atleta (só caixinhas parceladas) -->
+      <div v-if="ehParcelado" class="mt-3">
+        <button
+          v-if="!adicionandoAtleta"
+          class="text-xs font-semibold text-brand-700 dark:text-brand-400 hover:underline inline-flex items-center gap-1"
+          @click="abrirAdicaoAtleta"
+        >
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Adicionar atleta
+        </button>
+        <div v-else class="rounded-lg border border-brand-300 dark:border-brand-500/40 p-3 space-y-3">
+          <p class="text-xs font-semibold text-slate-700 dark:text-slate-200">Adicionar atleta a esta caixinha</p>
+
+          <select v-model="novoAtletaId" class="form-input text-sm py-1.5">
+            <option value="">Selecione o atleta...</option>
+            <option v-for="a in atletasDisponiveis" :key="a.id" :value="a.id">{{ a.nome }}</option>
+          </select>
+
+          <div v-if="novoAtletaId && parcelasRestantes > 0" class="space-y-2">
+            <p class="text-[11px] text-slate-500">
+              Já se passaram {{ planejamentoInfo?.numero_parcelas! - parcelasRestantes }} de {{ planejamentoInfo?.numero_parcelas }} parcela(s). Como cobrar esse atleta?
+            </p>
+            <button
+              type="button"
+              class="w-full text-left px-3 py-2 rounded-lg border transition-colors"
+              :class="modoEscolhido === 'parcial' ? 'border-brand-500 bg-brand-50 dark:bg-brand-500/10' : 'border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/[0.04]'"
+              @click="modoEscolhido = 'parcial'"
+            >
+              <p class="text-xs font-bold text-slate-900 dark:text-white">Parcial — só o tempo que ele fica dentro</p>
+              <p class="text-xs text-slate-500 mt-0.5">{{ parcelasRestantes }}× {{ formatCurrency(valorParcial) }} = {{ formatCurrency(valorParcial * parcelasRestantes) }}</p>
+            </button>
+            <button
+              type="button"
+              class="w-full text-left px-3 py-2 rounded-lg border transition-colors"
+              :class="modoEscolhido === 'integral' ? 'border-brand-500 bg-brand-50 dark:bg-brand-500/10' : 'border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/[0.04]'"
+              @click="modoEscolhido = 'integral'"
+            >
+              <p class="text-xs font-bold text-slate-900 dark:text-white">Integral — valor cheio do plano</p>
+              <p class="text-xs text-slate-500 mt-0.5">{{ parcelasRestantes }}× {{ formatCurrency(valorIntegral) }} = {{ formatCurrency(planejamentoInfo?.valor ?? 0) }}</p>
+            </button>
+          </div>
+          <p v-else-if="novoAtletaId" class="text-xs text-amber-600 dark:text-amber-400">Não há parcelas restantes nesta caixinha.</p>
+
+          <div class="flex items-center gap-2">
+            <button
+              class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-brand-600 hover:bg-brand-700 text-white disabled:opacity-50"
+              :disabled="!novoAtletaId || !modoEscolhido || parcelasRestantes === 0 || confirmandoAdicao"
+              @click="confirmarAdicaoAtleta"
+            >
+              {{ confirmandoAdicao ? 'Adicionando...' : 'Confirmar' }}
+            </button>
+            <button class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/[0.06]" @click="fecharAdicaoAtleta">
+              Cancelar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <UiKpiPastel density="compact" tone="brand" label="Previsto" :value="formatCurrency(caixinha.total_previsto)" />
+      <UiKpiPastel density="compact" tone="emerald" label="Pago" :value="formatCurrency(totalPago)" />
+      <UiKpiPastel density="compact" tone="amber" label="Pendente" :value="formatCurrency(totalPendente)" />
+      <UiKpiPastel density="compact" tone="violet" label="Pagantes" :value="`${pagantesCount}/${participantesTotais}`" />
+    </div>
+
+    <!-- Participantes -->
+    <div class="bg-white dark:bg-surface-elevated-dark rounded-xl border border-slate-200 dark:border-white/[0.10] shadow-card overflow-hidden">
+      <!-- Filtros -->
+      <div class="px-4 py-3 border-b border-slate-100 dark:border-white/[0.06] flex items-center gap-2 flex-wrap">
+        <div class="relative flex-1 min-w-[160px]">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input v-model="busca" type="text" placeholder="Buscar atleta..." class="form-input pl-9 w-full"/>
+        </div>
+        <input v-model="de" type="date" class="form-input w-auto" title="Pagamentos a partir de"/>
+        <span class="text-slate-400 text-xs">até</span>
+        <input v-model="ate" type="date" class="form-input w-auto" title="Pagamentos até"/>
+        <button
+          class="px-3 py-2 rounded-lg text-xs font-semibold border border-slate-200 dark:border-white/[0.10] text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/[0.05] inline-flex items-center gap-1.5 disabled:opacity-50"
+          :disabled="participantes.length === 0"
+          @click="exportarCsv"
+        >
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          CSV
+        </button>
+      </div>
+
+      <!-- Lista de participantes -->
+      <div v-if="loadingCobrancas" class="p-4 space-y-3">
+        <div v-for="i in 5" :key="i" class="skeleton h-14 rounded-lg"/>
+      </div>
+
+      <UiEmptyState
+        v-else-if="participantes.length === 0"
+        size="sm"
+        title="Sem participantes"
+        :description="busca || de || ate ? 'Nenhum resultado para os filtros aplicados.' : 'Esta caixinha ainda não tem cobranças.'"
+      />
+
+      <ul v-else class="divide-y divide-slate-100 dark:divide-white/[0.06]">
+        <li v-for="p in participantes" :key="p.atleta_id">
+          <!-- Linha principal (clicável p/ expandir) -->
+          <button
+            class="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors"
+            @click="toggle(p.atleta_id)"
+          >
+            <UiAvatar :nome="p.nome" :src="p.foto_url" size="sm"/>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-semibold text-slate-900 dark:text-white truncate">{{ p.nome }}</p>
+              <p class="text-xs text-slate-500">
+                {{ p.pagas }} de {{ p.cobrancas.length }} pago(s)
+                <template v-if="p.ultimoPagamento"> · último {{ formatDate(p.ultimoPagamento) }}</template>
+              </p>
+            </div>
+            <div class="text-right shrink-0">
+              <p class="text-sm font-bold text-emerald-600 dark:text-emerald-400">{{ formatCurrency(p.totalEnviado) }}</p>
+              <p v-if="p.totalPendente > 0" class="text-[11px] text-amber-600 dark:text-amber-400">{{ formatCurrency(p.totalPendente) }} pendente</p>
+            </div>
+            <svg class="w-4 h-4 text-slate-400 shrink-0 transition-transform" :class="{ 'rotate-180': aberto[p.atleta_id] }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+
+          <!-- Histórico expandido -->
+          <div v-if="aberto[p.atleta_id]" class="px-4 pb-3 pl-[60px] space-y-1.5">
+            <div
+              v-for="c in p.cobrancas"
+              :key="c.id"
+              class="flex items-center justify-between gap-2 text-xs py-1.5 px-3 rounded-lg bg-slate-50 dark:bg-white/[0.02]"
+            >
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="w-1.5 h-1.5 rounded-full shrink-0" :style="{ background: statusCor(c) }"/>
+                <span class="text-slate-600 dark:text-slate-300">
+                  {{ c.data_pagamento ? `Pago em ${formatDate(c.data_pagamento.slice(0, 10))}` : `Vence ${formatDate(c.data_vencimento)}` }}
+                </span>
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                <button
+                  v-if="c.status === 'pendente'"
+                  class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300 hover:bg-emerald-100 disabled:opacity-50"
+                  :disabled="marcando === c.id"
+                  @click.stop="marcarPago(c)"
+                >
+                  {{ marcando === c.id ? '...' : 'Marcar pago' }}
+                </button>
+                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide" :style="{ background: statusBg(c), color: statusCor(c) }">{{ statusLabel(c) }}</span>
+                <span class="font-semibold text-slate-900 dark:text-white">{{ formatCurrency(c.valor) }}</span>
+              </div>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { formatCurrency, formatDate } from '~/utils/format'
+import type { Caixinha, Cobranca } from '~/types'
+
+definePageMeta({ layout: 'default' })
+
+const route = useRoute()
+const fin = useFinanceiro()
+const atletasComp = useAtletas()
+const toast = useToast()
+
+const caixinhaId = computed(() => route.params.id as string)
+
+const loading = ref(true)
+const caixinha = ref<Caixinha | null>(null)
+
+const hoje = new Date().toISOString().slice(0, 10)
+const loadingCobrancas = ref(true)
+const cobrancas = ref<Cobranca[]>([])
+
+const busca = ref('')
+const de = ref('')
+const ate = ref('')
+const aberto = reactive<Record<string, boolean>>({})
+const marcando = ref<string | null>(null)
+
+// ── Ajuste de valor padrão (espelho) ─────────────────────────────────────────
+const planejamentoId = computed(() => (caixinha.value as any)?.planejamento_id as string | undefined)
+const planejamentoValor = computed(() => Number((caixinha.value as any)?.planejamentos?.valor ?? 0))
+const editandoValor = ref(false)
+const novoValor = ref(0)
+const salvandoValor = ref(false)
+
+// ── Adicionar atleta (só caixinhas parceladas) ───────────────────────────────
+interface PlanejamentoInfo {
+  valor: number
+  numero_parcelas: number | null
+  data_inicio: string | null
+  dia_vencimento: number | null
+  tipo: string
+}
+const planejamentoInfo = computed<PlanejamentoInfo | undefined>(() => (caixinha.value as any)?.planejamentos)
+const ehParcelado = computed(() => planejamentoInfo.value?.tipo === 'parcelado')
+
+const adicionandoAtleta = ref(false)
+const novoAtletaId = ref('')
+const modoEscolhido = ref<'parcial' | 'integral' | null>(null)
+const confirmandoAdicao = ref(false)
+const atletasTodos = ref<{ id: string; nome: string }[]>([])
+
+const atletasDisponiveis = computed(() => {
+  const jaNaCaixinha = new Set(participantes.value.map((p) => p.atleta_id))
+  return atletasTodos.value.filter((a) => !jaNaCaixinha.has(a.id))
+})
+
+// Conta quantas parcelas ainda não venceram — mesma regra da RPC
+// adicionar_atleta_caixinha_parcelada (preview client-side; quem decide de
+// verdade é o banco na hora de confirmar).
+const parcelasRestantes = computed(() => {
+  const p = planejamentoInfo.value
+  if (!p?.data_inicio || !p.numero_parcelas || !p.dia_vencimento) return 0
+  let restantes = 0
+  const inicio = new Date(p.data_inicio + 'T00:00:00')
+  for (let i = 0; i < p.numero_parcelas; i++) {
+    const venc = new Date(inicio.getFullYear(), inicio.getMonth() + i, p.dia_vencimento)
+    if (venc.toISOString().slice(0, 10) >= hoje) restantes++
+  }
+  return restantes
+})
+
+const valorParcial = computed(() => {
+  const p = planejamentoInfo.value
+  if (!p?.numero_parcelas) return 0
+  return Math.round((p.valor / p.numero_parcelas) * 100) / 100
+})
+const valorIntegral = computed(() => {
+  const p = planejamentoInfo.value
+  if (!p || parcelasRestantes.value === 0) return 0
+  return Math.round((p.valor / parcelasRestantes.value) * 100) / 100
+})
+
+async function abrirAdicaoAtleta() {
+  adicionandoAtleta.value = true
+  if (atletasTodos.value.length === 0) {
+    const { data } = await atletasComp.listar({ incluir_inativos: false, limite: 1000 })
+    atletasTodos.value = (data ?? []).map((a) => ({ id: a.id, nome: a.nome }))
+  }
+}
+
+function fecharAdicaoAtleta() {
+  adicionandoAtleta.value = false
+  novoAtletaId.value = ''
+  modoEscolhido.value = null
+}
+
+async function confirmarAdicaoAtleta() {
+  const pid = planejamentoId.value
+  if (!pid || !novoAtletaId.value || !modoEscolhido.value || confirmandoAdicao.value) return
+  confirmandoAdicao.value = true
+  try {
+    const { data, error } = await fin.adicionarAtletaCaixinhaParcelada(pid, novoAtletaId.value, modoEscolhido.value)
+    if (error || !data) throw error ?? new Error('Falha ao adicionar atleta')
+    toast.success('Atleta adicionado', `${data.parcelas_geradas} parcela(s) de ${formatCurrency(data.valor_parcela)} geradas.`)
+    fecharAdicaoAtleta()
+    await carregarCobrancas()
+  } catch (err: any) {
+    toast.error('Falha ao adicionar atleta', err?.message ?? '')
+  } finally {
+    confirmandoAdicao.value = false
+  }
+}
+
+function abrirEditarValor() {
+  novoValor.value = planejamentoValor.value
+  editandoValor.value = true
+}
+
+async function confirmarValor() {
+  const pid = planejamentoId.value
+  if (!pid || salvandoValor.value || novoValor.value < 0) return
+  salvandoValor.value = true
+  try {
+    const { data: prev } = await fin.previewPropagacao(pid, novoValor.value)
+    const msg = prev
+      ? `${prev.atletas} atleta(s) no padrão e ${prev.cobrancas} cobrança(s) futura(s) serão atualizadas para ${formatCurrency(novoValor.value)}. Confirmar?`
+      : `Aplicar ${formatCurrency(novoValor.value)} como novo valor padrão?`
+    if (!window.confirm(msg)) { salvandoValor.value = false; return }
+
+    const { error: upErr } = await fin.atualizarPlanejamento(pid, { valor: novoValor.value })
+    if (upErr) throw upErr
+    const { data: n, error: propErr } = await fin.propagarValor(pid, novoValor.value)
+    if (propErr) throw propErr
+    toast.success('Valor atualizado', `${n ?? 0} cobrança(s) futura(s) ajustada(s).`)
+    editandoValor.value = false
+    await carregar()
+  } catch (e: any) {
+    toast.error('Falha ao ajustar valor', e?.message ?? '')
+  } finally {
+    salvandoValor.value = false
+  }
+}
+
+function toggle(id: string) {
+  aberto[id] = !aberto[id]
+}
+
+async function marcarPago(c: Cobranca) {
+  if (marcando.value) return
+  if (!window.confirm(`Marcar como paga manualmente a cobrança de ${formatCurrency(c.valor)}?`)) return
+  marcando.value = c.id
+  const { error } = await fin.marcarComoPago(c.id)
+  if (error) {
+    toast.error('Falha ao marcar como pago', (error as any)?.message ?? '')
+  } else {
+    toast.success('Cobrança quitada', 'Entrada lançada e totais atualizados.')
+    await carregarCobrancas()
+  }
+  marcando.value = null
+}
+
+// ── Helpers de status ────────────────────────────────────────────────────────
+function atrasada(c: Cobranca) {
+  return c.status === 'pendente' && c.data_vencimento < hoje
+}
+function statusLabel(c: Cobranca) {
+  if (c.status === 'pago') return 'Pago'
+  if (c.status === 'isento') return 'Isento'
+  if (c.status === 'cancelado') return 'Cancelado'
+  return atrasada(c) ? 'Atrasado' : 'Pendente'
+}
+function statusCor(c: Cobranca) {
+  if (c.status === 'pago') return '#10b981'
+  if (c.status === 'isento') return '#8b5cf6'
+  if (c.status === 'cancelado') return '#94a3b8'
+  return atrasada(c) ? '#f43f5e' : '#f59e0b'
+}
+function statusBg(c: Cobranca) {
+  return statusCor(c) + '1a' // ~10% alpha
+}
+
+// ── Carregamento ─────────────────────────────────────────────────────────────
+async function carregarCobrancas() {
+  if (!caixinha.value) return
+  loadingCobrancas.value = true
+  const { data } = await fin.listarCobranças({ caixinha_id: caixinha.value.id })
+  cobrancas.value = data ?? []
+  loadingCobrancas.value = false
+}
+
+async function carregar() {
+  loading.value = true
+  try {
+    const { data } = await fin.buscarCaixinha(caixinhaId.value)
+    caixinha.value = data
+    if (caixinha.value) {
+      useHead({ title: `${caixinha.value.nome} — Athletto` })
+      await carregarCobrancas()
+    }
+  } finally {
+    loading.value = false
+  }
+}
+onMounted(carregar)
+
+// Resolve atleta a partir do mock (`atleta`) ou do join real (`atletas`).
+function atletaDe(c: any): { id: string; nome: string; foto_url: string | null } {
+  const a = c.atleta ?? c.atletas
+  return {
+    id: c.atleta_id,
+    nome: a?.nome ?? 'Atleta',
+    foto_url: a?.foto_url ?? null,
+  }
+}
+
+// ── Filtro por período (data de pagamento ou vencimento) ─────────────────────
+const cobrancasFiltradas = computed(() =>
+  cobrancas.value.filter((c) => {
+    const ref = (c.data_pagamento?.slice(0, 10)) ?? c.data_vencimento
+    if (de.value && ref < de.value) return false
+    if (ate.value && ref > ate.value) return false
+    return true
+  }),
+)
+
+// ── Agrupamento por atleta ───────────────────────────────────────────────────
+interface Participante {
+  atleta_id: string
+  nome: string
+  foto_url: string | null
+  cobrancas: Cobranca[]
+  pagas: number
+  totalEnviado: number
+  totalPendente: number
+  ultimoPagamento: string | null
+}
+
+const participantes = computed<Participante[]>(() => {
+  const mapa = new Map<string, Participante>()
+  for (const c of cobrancasFiltradas.value) {
+    const a = atletaDe(c)
+    let p = mapa.get(a.id)
+    if (!p) {
+      p = { atleta_id: a.id, nome: a.nome, foto_url: a.foto_url, cobrancas: [], pagas: 0, totalEnviado: 0, totalPendente: 0, ultimoPagamento: null }
+      mapa.set(a.id, p)
+    }
+    p.cobrancas.push(c)
+    if (c.status === 'pago') {
+      p.pagas++
+      p.totalEnviado += c.valor
+      const dp = c.data_pagamento?.slice(0, 10) ?? null
+      if (dp && (!p.ultimoPagamento || dp > p.ultimoPagamento)) p.ultimoPagamento = dp
+    } else if (c.status === 'pendente') {
+      p.totalPendente += c.valor
+    }
+  }
+  let lista = [...mapa.values()]
+  if (busca.value) {
+    const q = busca.value.toLowerCase()
+    lista = lista.filter((p) => p.nome.toLowerCase().includes(q))
+  }
+  // Ordena por pendência (quem deve primeiro), depois por nome.
+  return lista.sort((a, b) => b.totalPendente - a.totalPendente || a.nome.localeCompare(b.nome))
+})
+
+const participantesTotais = computed(() => participantes.value.length)
+const pagantesCount = computed(() => participantes.value.filter((p) => p.pagas > 0).length)
+const totalPago = computed(() => cobrancasFiltradas.value.filter((c) => c.status === 'pago').reduce((s, c) => s + c.valor, 0))
+const totalPendente = computed(() => cobrancasFiltradas.value.filter((c) => c.status === 'pendente').reduce((s, c) => s + c.valor, 0))
+
+// ── Export CSV (detalhe filtrado) ────────────────────────────────────────────
+function exportarCsv() {
+  const head = ['Atleta', 'Status', 'Valor', 'Vencimento', 'Pagamento']
+  const rows = cobrancasFiltradas.value.map((c) => [
+    atletaDe(c).nome,
+    statusLabel(c),
+    c.valor.toFixed(2).replace('.', ','),
+    c.data_vencimento,
+    c.data_pagamento?.slice(0, 10) ?? '',
+  ])
+  const csv = [head, ...rows].map((r) => r.map((cell) => `"${cell}"`).join(';')).join('\n')
+  const blob = new Blob([`﻿${csv}`], { type: 'text/csv;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `caixinha-${(caixinha.value?.nome ?? 'caixinha').replace(/[^a-z0-9]/gi, '-').toLowerCase()}.csv`
+  a.click()
+  URL.revokeObjectURL(url)
+  toast.success('Detalhe exportado')
+}
+</script>

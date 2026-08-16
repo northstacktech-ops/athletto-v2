@@ -22,12 +22,11 @@
     <UiEmptyState v-else-if="caixinhas.length === 0" title="Sem caixinhas" description="Crie um planejamento financeiro e ative para gerar a caixinha."/>
 
     <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-3">
-      <button
+      <NuxtLink
         v-for="cx in caixinhas"
         :key="cx.id"
-        type="button"
-        class="text-left bg-white dark:bg-surface-elevated-dark rounded-xl border border-slate-200 dark:border-white/[0.10] p-4 transition-all hover:shadow-card hover:-translate-y-0.5 hover:border-slate-300 dark:hover:border-white/20"
-        @click="caixinhaSelecionada = cx"
+        :to="`/financeiro/caixinhas/${cx.id}`"
+        class="text-left bg-white dark:bg-surface-elevated-dark rounded-xl border border-slate-200 dark:border-white/[0.10] p-4 transition-all hover:shadow-card hover:-translate-y-0.5 hover:border-slate-300 dark:hover:border-white/20 block"
       >
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">
@@ -61,15 +60,8 @@
           Ver participantes
           <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         </div>
-      </button>
+      </NuxtLink>
     </div>
-
-    <!-- Drawer de detalhe da caixinha -->
-    <FinanceiroCaixinhaDetalheDrawer
-      v-if="caixinhaSelecionada"
-      :caixinha="caixinhaSelecionada"
-      @close="caixinhaSelecionada = null"
-    />
 
     <!-- Modal de transferência -->
     <Teleport to="body">
@@ -131,7 +123,6 @@ const toast = useToast()
 
 const loading = ref(true)
 const caixinhas = ref<Caixinha[]>([])
-const caixinhaSelecionada = ref<Caixinha | null>(null)
 
 const abrirTransferencia = ref(false)
 const enviando = ref(false)

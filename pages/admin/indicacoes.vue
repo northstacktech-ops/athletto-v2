@@ -3,12 +3,12 @@
 
     <div class="flex items-end justify-between gap-4 flex-wrap">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white leading-tight">Indicações — Convide e Ganhe</h1>
-        <p class="text-sm text-gray-400 dark:text-gray-500 mt-0.5">
+        <h1 class="page-title">Indicações — Convide e Ganhe</h1>
+        <p class="page-description">
           {{ pendentes }} pendentes · {{ todas.length }} totais · recompensa atual: <strong>{{ config?.indicacao_dias_recompensa ?? 30 }} dias</strong>
         </p>
       </div>
-      <NuxtLink to="/admin/configuracoes" class="text-xs font-semibold text-gray-600 hover:text-gray-900">
+      <NuxtLink to="/admin/configuracoes" class="text-xs font-semibold text-slate-600 hover:text-slate-900">
         Ajustar regras →
       </NuxtLink>
     </div>
@@ -20,8 +20,8 @@
         :key="s || 'all'"
         class="px-3 py-1.5 rounded-lg text-sm font-semibold border transition-colors"
         :class="filtroStatus === s
-          ? 'bg-gray-900 text-white border-gray-900 dark:bg-white dark:text-gray-900 dark:border-white'
-          : 'bg-white dark:bg-surface-elevated-dark border-gray-200 dark:border-white/[0.10] text-gray-700 dark:text-gray-300 hover:bg-gray-50'"
+          ? 'bg-slate-900 text-white border-slate-900 dark:bg-white dark:text-slate-900 dark:border-white'
+          : 'bg-white dark:bg-surface-elevated-dark border-slate-200 dark:border-white/[0.10] text-slate-700 dark:text-slate-300 hover:bg-slate-50'"
         @click="filtroStatus = s"
       >
         {{ s === '' ? 'Todas' : s.charAt(0).toUpperCase() + s.slice(1) }}
@@ -29,28 +29,28 @@
     </div>
 
     <!-- Lista -->
-    <div class="bg-white dark:bg-surface-elevated-dark rounded-xl border border-gray-200 dark:border-white/[0.10] overflow-hidden">
+    <div class="card-base overflow-hidden">
       <div v-if="loading" class="p-5 space-y-3">
         <div v-for="i in 3" :key="i" class="skeleton h-16 rounded-lg"/>
       </div>
 
       <UiEmptyState v-else-if="filtradas.length === 0" title="Sem indicações" description="Nada a processar neste filtro."/>
 
-      <ul v-else class="divide-y divide-gray-100 dark:divide-white/[0.07]">
+      <ul v-else class="divide-y divide-slate-100 dark:divide-white/[0.07]">
         <li v-for="ind in filtradas" :key="ind.id" class="px-5 py-4">
           <div class="flex items-center gap-3 flex-wrap">
             <div class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0" style="background-color: #3d5afe;">
               {{ getIniciais(ind.indicador?.nome ?? '?') }}
             </div>
             <div class="flex-1 min-w-0">
-              <p class="text-sm font-semibold text-gray-900 dark:text-white">
+              <p class="text-sm font-semibold text-slate-900 dark:text-white">
                 <NuxtLink :to="`/admin/clubes/${ind.clube_indicador_id}`" class="hover:underline">
                   {{ ind.indicador?.nome }}
                 </NuxtLink>
-                <span class="text-gray-400 font-normal"> indicou </span>
+                <span class="text-slate-400 font-normal"> indicou </span>
                 {{ ind.nome_indicado ?? ind.email_indicado }}
               </p>
-              <p class="text-xs text-gray-500">
+              <p class="text-xs text-slate-500">
                 {{ ind.email_indicado }}
                 <template v-if="ind.telefone_indicado"> · {{ ind.telefone_indicado }}</template>
                 · {{ formatRelativeDate(ind.criado_em) }}
@@ -165,7 +165,7 @@ function statusCor(s: Indicacao['status']) {
     case 'pendente': return 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
     case 'aprovada': return 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
     case 'rejeitada': return 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300'
-    case 'expirada': return 'bg-gray-100 text-gray-600 dark:bg-white/[0.05] dark:text-gray-400'
+    case 'expirada': return 'bg-slate-100 text-slate-600 dark:bg-white/[0.05] dark:text-slate-400'
   }
 }
 </script>
