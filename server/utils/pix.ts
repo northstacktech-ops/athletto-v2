@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { logEvento, erroParaLog } from '~~/server/utils/logger'
 import { criarCobrancaPix as criarPixValidaPay, validapayConfigurada, type SplitItem } from '~~/server/utils/validapay'
+import { mensagemErroGateway } from '~~/server/utils/erroAmigavel'
 
 export interface CriarPixResult {
   ok: boolean
@@ -111,9 +112,8 @@ export async function criarPixParaCobranca(
           .eq('id', cobrancaId)
         return { ok: true, id: resp.chargeId, copy_paste: resp.emv || undefined, qr_code: resp.qrCodeBase64 }
       } catch (err: any) {
-        const gwMsg = err?.data?.message || err?.data?.error
         logEvento('error', 'pix.criar.validapay_erro', { cobranca_id: cobrancaId, erro: erroParaLog(err) })
-        return { ok: false, status: 502, erro: gwMsg ? `ValidaPay: ${gwMsg}` : 'Falha no gateway ValidaPay' }
+        return { ok: false, status: 502, erro: mensagemErroGateway(err, 'Não foi possível gerar o Pix agora. Tente novamente em instantes.') }
       }
     }
   }

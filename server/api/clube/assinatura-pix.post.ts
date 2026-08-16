@@ -2,6 +2,7 @@ import { defineEventHandler, readBody, createError, getHeader } from 'h3'
 import { createClient } from '@supabase/supabase-js'
 import { serverSupabaseUser } from '#supabase/server'
 import { criarCobrancaPix, validapayConfigurada } from '~~/server/utils/validapay'
+import { mensagemErroGateway } from '~~/server/utils/erroAmigavel'
 import { PLANOS } from '~/types'
 
 /**
@@ -117,6 +118,9 @@ export default defineEventHandler(async (event) => {
 
     return { ok: true, chargeId: resp.chargeId, emv: resp.emv, qrCodeBase64: resp.qrCodeBase64, plano, valor }
   } catch (err: any) {
-    throw createError({ statusCode: 502, statusMessage: err?.data?.message ?? err?.message ?? 'Falha ao gerar Pix da assinatura.' })
+    throw createError({
+      statusCode: 502,
+      statusMessage: mensagemErroGateway(err, 'Não foi possível gerar o Pix agora. Tente novamente em alguns instantes.'),
+    })
   }
 })

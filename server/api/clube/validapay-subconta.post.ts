@@ -2,6 +2,7 @@ import { defineEventHandler, readBody, createError, getHeader, getRequestURL } f
 import { createClient } from '@supabase/supabase-js'
 import { serverSupabaseUser } from '#supabase/server'
 import { criarSubcontaPF, criarSubcontaPJ, validapayConfigurada, type SubcontaPF, type SubcontaPJ } from '~~/server/utils/validapay'
+import { mensagemErroGateway } from '~~/server/utils/erroAmigavel'
 
 /**
  * POST /api/clube/validapay-subconta
@@ -114,7 +115,10 @@ export default defineEventHandler(async (event) => {
       ? await criarSubcontaPJ(dados as SubcontaPJ)
       : await criarSubcontaPF(dados as SubcontaPF)
   } catch (err: any) {
-    throw createError({ statusCode: 502, statusMessage: (err as any)?.data?.message ?? (err as any)?.message ?? 'Falha ao criar subconta na ValidaPay.' })
+    throw createError({
+      statusCode: 502,
+      statusMessage: mensagemErroGateway(err, 'Não foi possível criar a conta de recebimento agora. Tente novamente mais tarde ou fale com o suporte.'),
+    })
   }
 
   // Persiste o vínculo (status pendente até o webhook aprovar).

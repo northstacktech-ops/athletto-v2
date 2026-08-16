@@ -2,6 +2,7 @@ import { defineEventHandler, createError, getHeader } from 'h3'
 import { createClient } from '@supabase/supabase-js'
 import { serverSupabaseUser } from '#supabase/server'
 import { statusSubconta, validapayConfigurada } from '~~/server/utils/validapay'
+import { mensagemErroGateway } from '~~/server/utils/erroAmigavel'
 
 /**
  * POST /api/clube/validapay-status
@@ -39,7 +40,10 @@ export default defineEventHandler(async (event) => {
   try {
     raw = await statusSubconta(formId)
   } catch (err: any) {
-    throw createError({ statusCode: 502, statusMessage: err?.data?.message ?? err?.message ?? 'Falha ao consultar a ValidaPay.' })
+    throw createError({
+      statusCode: 502,
+      statusMessage: mensagemErroGateway(err, 'Não foi possível consultar o status agora. Tente novamente em instantes.'),
+    })
   }
 
   // Loga a resposta crua p/ travar os nomes de campo reais (best-effort).

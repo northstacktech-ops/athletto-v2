@@ -2,6 +2,7 @@ import { defineEventHandler, createError, getHeader, readBody } from 'h3'
 import { createClient } from '@supabase/supabase-js'
 import { serverSupabaseUser } from '#supabase/server'
 import { saldoSubconta, solicitarSaque, validapayConfigurada } from '~~/server/utils/validapay'
+import { mensagemErroGateway } from '~~/server/utils/erroAmigavel'
 
 export default defineEventHandler(async (event) => {
   const supabaseUrl = process.env.SUPABASE_URL || process.env.NUXT_PUBLIC_SUPABASE_URL
@@ -114,11 +115,13 @@ export default defineEventHandler(async (event) => {
 
     return { ok: true, saqueId: saqueRow!.id }
   } catch (err: any) {
-    const erro = err?.data?.message ?? err?.message ?? 'Falha ao solicitar saque na ValidaPay.'
+    // Guarda o erro bruto pra investigação interna; o gestor vê a versão amigável.
+    const erroBruto = err?.data?.message ?? err?.message ?? 'Falha ao solicitar saque na ValidaPay.'
+    const erroAmigavel = mensagemErroGateway(err, 'Não foi possível solicitar o saque agora. Tente novamente em alguns instantes.')
     await admin
       .from('saques')
-      .update({ status: 'recusado', ultimo_erro: erro, processado_em: new Date().toISOString() })
+      .update({ status: 'recusado', ultimo_erro: erroBruto, processado_em: new Date().toISOString() })
       .eq('id', saqueRow!.id)
-    throw createError({ statusCode: 502, statusMessage: erro })
+    throw createError({ statusCode: 502, statusMessage: erroAmigavel })
   }
 })
