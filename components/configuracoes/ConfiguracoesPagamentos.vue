@@ -364,7 +364,7 @@ function montarDados() {
       documentNumber: f.documentNumber.replace(/\D/g, ''),
       fullName: f.fullName.trim(),
       motherName: f.motherName.trim(),
-      birthDate: f.birthDate, // YYYY-MM-DD — formato esperado pela ValidaPay para PF
+      birthDate: f.birthDate, // AAAA-MM-DD (nativo do <input type="date">) — servidor converte pra DD-MM-AAAA
       email: f.email.trim(),
       phoneNumber: f.phoneNumber, // servidor normaliza para E.164 (+55...)
       address,

@@ -5,18 +5,20 @@
         <div class="absolute inset-0 bg-slate-950/70 backdrop-blur-sm" />
 
         <div class="relative w-full sm:max-w-md bg-white dark:bg-surface-elevated-dark rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden">
-          <!-- Faixa de marca -->
-          <div class="bg-brand-600 px-6 pt-7 pb-6 text-center relative">
+          <!-- Faixa de status: EM ANDAMENTO, não concluído — nada de check/confete
+               aqui, pra não passar a falsa impressão de que já terminou. -->
+          <div class="bg-amber-500 px-6 pt-7 pb-6 text-center relative">
             <button type="button" class="absolute top-3 right-3 p-1.5 rounded-md text-white/70 hover:text-white hover:bg-white/10" @click="$emit('close')">
               <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
-            <div class="w-16 h-16 mx-auto rounded-2xl bg-white/15 grid place-items-center mb-3">
-              <BrandMark class="w-9 h-9 text-white" />
+            <div class="w-16 h-16 mx-auto rounded-2xl bg-white/15 grid place-items-center mb-3 relative">
+              <span class="absolute inset-0 rounded-2xl border-2 border-white/40 border-t-white animate-spin" />
+              <svg class="w-8 h-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             </div>
-            <h2 class="text-lg font-bold text-white">Conta registrada! 🎉</h2>
+            <h2 class="text-lg font-bold text-white">Cadastro enviado — em análise</h2>
             <p class="text-sm text-white/80 mt-1 leading-relaxed">
-              Estamos validando seus dados de recebimento — é rápido e automático.
-              Você é avisado assim que estiver tudo certo.
+              Seus dados foram enviados e estão sendo validados agora. Isso costuma
+              ser rápido — você recebe um aviso assim que a conta for aprovada.
             </p>
           </div>
 

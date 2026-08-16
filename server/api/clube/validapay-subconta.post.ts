@@ -60,14 +60,30 @@ export default defineEventHandler(async (event) => {
     return '+55' + semDDI
   }
 
+  // <input type="date"> do navegador sempre devolve AAAA-MM-DD (ISO) — a
+  // ValidaPay exige DD-MM-AAAA. Conversão fica aqui (não no formulário) pra
+  // não depender de nenhuma tela lembrar do formato certo.
+  function paraDDMMAAAA(raw: string): string {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(raw)
+    if (!m) return raw // já em outro formato (ou owner PJ, que já manda DD-MM-YYYY) — não mexe
+    const [, ano, mes, dia] = m
+    return `${dia}-${mes}-${ano}`
+  }
+
   if (tipo === 'pf') {
     if (typeof dados.phoneNumber === 'string') dados.phoneNumber = normalizarTelefone(dados.phoneNumber)
+    if (typeof dados.birthDate === 'string') dados.birthDate = paraDDMMAAAA(dados.birthDate)
     delete dados.contactNumber
   } else {
     // PJ usa contactNumber (não phoneNumber)
     const rawTel = (dados.contactNumber ?? dados.phoneNumber) as string | undefined
     if (rawTel) dados.contactNumber = normalizarTelefone(rawTel)
     delete dados.phoneNumber
+    if (Array.isArray(dados.owner)) {
+      for (const owner of dados.owner as any[]) {
+        if (typeof owner.birthDate === 'string') owner.birthDate = paraDDMMAAAA(owner.birthDate)
+      }
+    }
   }
 
   // Limpa formatação (R$, pontos, vírgulas) e devolve como STRING numérica
