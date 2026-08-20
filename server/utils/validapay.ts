@@ -134,10 +134,6 @@ export async function statusSubconta(formId: string) {
   return vp<any>(`/v1/proposals/${formId}`)
 }
 
-export async function listarSubcontas() {
-  return vp<any>('/v1/accounts/subaccounts')
-}
-
 export async function saldoSubconta(accountIds: string) {
   // accountIds: um ou vários separados por vírgula (header accountId).
   return vp<any>('/v1/wallet/balance', { accountId: accountIds })
@@ -237,11 +233,4 @@ export async function registrarWebhook(url: string, events?: string[], authToken
 
 export async function listarWebhooks() {
   return vp<any>('/v1/users/webhooks')
-}
-
-// Sandbox: dispara um evento de teste de webhook (POST /v1/users/webhooks/test).
-// `entity` = tipo do evento (ex.: 'payment.success').
-export async function testarWebhook(params: { webhookId?: string; url?: string; entity: string }) {
-  if (ambiente() === 'production') throw new Error('testarWebhook só faz sentido em sandbox.')
-  return vp<any>('/v1/users/webhooks/test', { method: 'POST', body: params })
 }

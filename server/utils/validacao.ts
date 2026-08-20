@@ -1,4 +1,4 @@
-import { createError, readBody, getQuery } from 'h3'
+import { createError, readBody } from 'h3'
 import type { H3Event } from 'h3'
 import type { ZodTypeAny, infer as ZodInfer } from 'zod'
 
@@ -24,18 +24,6 @@ export async function lerBodyValidado<S extends ZodTypeAny>(
   const parsed = schema.safeParse(body ?? {})
   if (!parsed.success) {
     throw createError({ statusCode: 400, statusMessage: `Dados inválidos — ${primeiroErro(parsed.error)}` })
-  }
-  return parsed.data
-}
-
-/** Lê e valida a query string contra um schema Zod. Lança 400 se inválido. */
-export function lerQueryValidada<S extends ZodTypeAny>(
-  event: H3Event,
-  schema: S,
-): ZodInfer<S> {
-  const parsed = schema.safeParse(getQuery(event))
-  if (!parsed.success) {
-    throw createError({ statusCode: 400, statusMessage: `Query inválida — ${primeiroErro(parsed.error)}` })
   }
   return parsed.data
 }

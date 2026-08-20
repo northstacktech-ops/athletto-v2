@@ -38,12 +38,6 @@ export function formatCurrency(value: number): string {
   }).format(value)
 }
 
-export function formatCurrencyShort(value: number): string {
-  if (value >= 1_000_000) return `R$ ${(value / 1_000_000).toFixed(1)}M`
-  if (value >= 1_000) return `R$ ${(value / 1_000).toFixed(1)}K`
-  return formatCurrency(value)
-}
-
 // ─── Formatação de data ───────────────────────────────────────────────────────
 
 export function formatDate(date: string | Date): string {
@@ -73,11 +67,6 @@ export function formatRelativeDate(date: string | Date): string {
   if (diffDays < 7) return `${diffDays} dias atrás`
   if (diffDays < 30) return `${Math.floor(diffDays / 7)} sem. atrás`
   return formatDate(d)
-}
-
-export function isVencido(dataVencimento: string): boolean {
-  const venc = new Date(dataVencimento + 'T23:59:59')
-  return venc < new Date()
 }
 
 // ─── Formatação de dias da semana ─────────────────────────────────────────────
@@ -115,16 +104,4 @@ export function getIniciais(nome: string): string {
   const partes = nome.trim().split(' ').filter(Boolean)
   if (partes.length === 1) return partes[0].slice(0, 2).toUpperCase()
   return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase()
-}
-
-// ─── Percentual ──────────────────────────────────────────────────────────────
-
-export function formatPercent(value: number, total: number): string {
-  if (total === 0) return '0%'
-  return `${Math.round((value / total) * 100)}%`
-}
-
-export function calcPercent(value: number, total: number): number {
-  if (total === 0) return 0
-  return Math.round((value / total) * 100)
 }
