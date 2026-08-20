@@ -1,10 +1,15 @@
-import { defineEventHandler, createError, getHeader, getQuery } from 'h3'
+import { defineEventHandler, createError, getHeader, getQuery, setResponseHeader } from 'h3'
 import { createClient } from '@supabase/supabase-js'
 import { serverSupabaseUser } from '#supabase/server'
 import { extratoSubconta, validapayConfigurada } from '~~/server/utils/validapay'
 import { mensagemErroGateway } from '~~/server/utils/erroAmigavel'
 
 export default defineEventHandler(async (event) => {
+  // Dado financeiro sempre precisa vir fresco — sem isso o navegador podia
+  // reaproveitar uma resposta antiga (inclusive um erro antigo) em recargas
+  // seguintes, escondendo qualquer correção já publicada.
+  setResponseHeader(event, 'Cache-Control', 'no-store')
+
   const supabaseUrl = process.env.SUPABASE_URL || process.env.NUXT_PUBLIC_SUPABASE_URL
   const serviceRole = process.env.SUPABASE_SERVICE_ROLE_KEY
   if (!supabaseUrl || !serviceRole) throw createError({ statusCode: 503, statusMessage: 'Sem credenciais Supabase.' })
