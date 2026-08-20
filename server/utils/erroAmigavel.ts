@@ -1,29 +1,32 @@
 /**
  * Traduz erros crus de gateway de pagamento (ValidaPay) pra mensagens que um
- * gestor não-técnico entende — sem URL, sem "409 Conflict", sem stack trace.
+ * gestor não-técnico entende — sem URL, sem "409 Conflict", sem stack trace,
+ * sem jargão de infraestrutura (cabeçalho, hash, etc.).
  *
- * Erros vindos de `$fetch` (ofetch) sem corpo de resposta parseável caem no
- * formato genérico `[POST] "https://...": 409 Conflict`, que é exatamente o
- * que NÃO pode chegar no toast do usuário. Regra: só repassamos a mensagem
- * original quando ela parece um texto de validação de verdade (não bate com
- * o padrão `[MÉTODO] "url"`); todo o resto vira uma mensagem fixa por status.
+ * A 1ª versão disso tentava BLOQUEAR padrões técnicos conhecidos (ex.: o
+ * formato genérico do ofetch `[POST] "https://...": 409`) e deixar passar
+ * qualquer coisa que não batesse — mas isso vazou um erro real de
+ * infraestrutura ("Invalid key=value pair... in Authorization header...")
+ * porque ele não batia com o único padrão bloqueado. Lista de bloqueio nunca
+ * cobre tudo. Agora é o oposto: LISTA DE PERMISSÃO — só repassamos a
+ * mensagem original quando ela bate com o único padrão de validação real
+ * que já vimos a ValidaPay devolver ("O campo X é obrigatório..."). Tudo
+ * que não bate vira mensagem fixa por status, por padrão.
  */
 
-const PADRAO_OFETCH = /^\[[A-Z]+\]\s+"https?:\/\//i
-
 function pareceMensagemDeValidacao(msg: unknown): msg is string {
-  return typeof msg === 'string' && msg.trim().length > 0 && !PADRAO_OFETCH.test(msg)
+  return typeof msg === 'string' && /^o campo\b/i.test(msg.trim())
 }
 
-const FALLBACK_POR_STATUS: Record<number, string> = {
-  400: 'Alguns dados não foram aceitos. Revise o formulário e tente novamente.',
-  401: 'Falha ao autenticar com o sistema de pagamentos. Nossa equipe já foi avisada.',
-  403: 'Falha ao autenticar com o sistema de pagamentos. Nossa equipe já foi avisada.',
-  404: 'Não encontramos esse registro no sistema de pagamentos.',
+// Só os status abaixo têm uma mensagem universal boa o bastante pra valer em
+// qualquer tela (fila/limite/indisponibilidade). Os demais (400, 401, 403,
+// 404, 422, 500...) variam demais por contexto — usar "revise o formulário"
+// numa tela de extrato/consulta, que não tem formulário nenhum, seria tão
+// confuso quanto o erro cru. Nesses casos vale mais a mensagem específica
+// que cada chamador já passa em `contextoFallback`.
+const FALLBACK_UNIVERSAL_POR_STATUS: Record<number, string> = {
   409: 'Já existe uma solicitação em andamento para esses dados. Aguarde a conclusão antes de tentar de novo.',
-  422: 'Alguns dados não foram aceitos pelo sistema de pagamentos. Revise e tente novamente.',
   429: 'Muitas tentativas em pouco tempo. Aguarde um instante e tente de novo.',
-  500: 'O sistema de pagamentos teve um problema interno. Tente novamente em alguns minutos.',
   502: 'Não conseguimos falar com o sistema de pagamentos agora. Tente novamente em alguns minutos.',
   503: 'O sistema de pagamentos está indisponível no momento. Tente novamente em alguns minutos.',
   504: 'O sistema de pagamentos demorou demais pra responder. Tente novamente.',
@@ -39,7 +42,7 @@ export function mensagemErroGateway(err: any, contextoFallback: string): string 
 
   if (pareceMensagemDeValidacao(msgUpstream)) return msgUpstream
 
-  if (status && FALLBACK_POR_STATUS[status]) return FALLBACK_POR_STATUS[status]
+  if (status && FALLBACK_UNIVERSAL_POR_STATUS[status]) return FALLBACK_UNIVERSAL_POR_STATUS[status]
 
   // Sem status (rede caiu, DNS, timeout de conexão) — não é erro de negócio.
   if (!status) return 'Não conseguimos conectar ao sistema de pagamentos. Verifique sua internet e tente novamente.'
