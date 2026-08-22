@@ -11,7 +11,9 @@
     "supabase:sync-auth": "node scripts/sync-supabase-auth.mjs",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "dependencies": {
     "@nuxt/image": "^1.8.0",
@@ -30,6 +32,10 @@
   "devDependencies": {
     "@nuxtjs/tailwindcss": "^6.12.2",
     "@types/node": "^22.14.0",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "storybook": "^9.1.2",
+    "@storybook/addon-a11y": "^9.1.2",
+    "@storybook/addon-docs": "^9.1.2",
+    "@storybook-vue/nuxt": "^9.0.1"
   }
 }
