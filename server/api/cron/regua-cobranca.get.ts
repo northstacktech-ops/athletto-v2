@@ -51,13 +51,14 @@ export default defineEventHandler(async (event) => {
     await Promise.allSettled(batch.map(async (linha) => {
       const { data: cb } = await supabase
         .from('cobrancas')
-        .select('valor, data_vencimento, atletas(nome, telefone_responsavel), clubes(nome)')
+        .select('valor, data_vencimento, validapay_emv, atletas(nome, telefone_responsavel), clubes(nome)')
         .eq('id', linha.cobranca_id)
         .single()
 
       const atleta: any = (cb as any)?.atletas
       const clube: any = (cb as any)?.clubes
       const telefone = atleta?.telefone_responsavel as string | undefined
+      const pixEmv = (cb as any)?.validapay_emv as string | null | undefined
 
       if (!cb || !telefone) {
         await supabase.from('mensagens_whatsapp')
@@ -67,11 +68,22 @@ export default defineEventHandler(async (event) => {
         return
       }
 
+      // Os 5 templates da régua (lembrete/atraso) têm {{5}} = código Pix
+      // copia-e-cola — sem ele a mensagem fica sem sentido (nada pra pagar).
+      if (!pixEmv) {
+        await supabase.from('mensagens_whatsapp')
+          .update({ status: 'falhou', erro: 'Cobrança sem código Pix gerado', atualizado_em: new Date().toISOString() })
+          .eq('id', linha.id)
+        erros.push({ mensagem_id: linha.id, erro: 'sem_pix_code' })
+        return
+      }
+
       const parametros = [
         atleta?.nome ?? 'Atleta',
         clube?.nome ?? 'seu clube',
         formatCurrency(Number((cb as any).valor)),
         formatDate((cb as any).data_vencimento),
+        pixEmv,
       ]
 
       const resultado = await enviarTemplateWhatsApp(telefone, linha.template_usado, parametros)

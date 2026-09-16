@@ -26,7 +26,8 @@
         </p>
         <ul class="list-disc pl-5 space-y-1">
           <li><strong>Nome comercial:</strong> Athletto</li>
-          <li><strong>Responsável:</strong> Athletto — negócio em processo de formalização. Os dados de registro (razão social, CNPJ e endereço) serão atualizados nesta página assim que a constituição da empresa for concluída.</li>
+          <li><strong>Responsável:</strong> Eric Felipe Fernandes Luz (MEI)</li>
+          <li><strong>CNPJ:</strong> 64.720.619/0001-53</li>
           <li><strong>E-mail:</strong> <strong>athletto.empresa@gmail.com</strong></li>
           <li><strong>Telefone / WhatsApp:</strong> <strong>+55 (95) 9177-5523</strong></li>
         </ul>
@@ -142,7 +143,7 @@
           dados, contate nosso Encarregado pelo Tratamento de Dados Pessoais (DPO):
         </p>
         <ul class="list-disc pl-5 space-y-1">
-          <li><strong>Encarregado (DPO):</strong> Equipe Athletto (o encarregado será nomeado formalmente na constituição da empresa)</li>
+          <li><strong>Encarregado (DPO):</strong> Eric Felipe Fernandes Luz</li>
           <li><strong>E-mail:</strong> <strong>athletto.empresa@gmail.com</strong></li>
           <li><strong>Telefone / WhatsApp:</strong> <strong>+55 (95) 9177-5523</strong></li>
         </ul>
@@ -158,5 +159,5 @@
 <script setup lang="ts">
 definePageMeta({ layout: false })
 useHead({ title: 'Privacidade — Athletto' })
-const dataAtualizacao = '6 de junho de 2026'
+const dataAtualizacao = '16 de setembro de 2026'
 </script>
