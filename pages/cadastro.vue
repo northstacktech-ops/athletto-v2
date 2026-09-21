@@ -250,7 +250,6 @@
 definePageMeta({ layout: 'signup' })
 useHead({ title: 'Criar conta — Athletto' })
 
-const supabase = useSupabaseClient()
 const { success } = useToast()
 
 // ── Steps ────────────────────────────────────────────────────────────────────
@@ -371,8 +370,8 @@ async function handleSubmit() {
   errorMsg.value = ''
 
   try {
-    // 1) Cria a conta no server (service role, email já confirmado — sem SMTP)
-    await $fetch('/api/auth/signup', {
+    // Cria a conta no server (e-mail pendente de confirmação) e dispara o código
+    const res = await $fetch<{ email_enviado?: boolean }>('/api/auth/signup', {
       method: 'POST',
       body: {
         email: form.email,
@@ -385,22 +384,12 @@ async function handleSubmit() {
     })
 
     localStorage.setItem('athletto_onboarding_nome_clube', form.nomeClube)
-
-    // 2) Login imediato no client
-    const { error: loginErr } = await supabase.auth.signInWithPassword({
-      email: form.email,
-      password: form.senha,
-    })
-    if (loginErr) {
-      // Conta criada mas login falhou (raro): manda para o login manual
-      success('Conta criada!', 'Entre com seu e-mail e senha para continuar.')
-      await navigateTo('/login')
-      return
-    }
-
     sessionStorage.removeItem(DRAFT_KEY)
-    success('Conta criada!', 'Bem-vindo ao Athletto.')
-    await navigateTo('/onboarding')
+
+    // O login só acontece depois de confirmar o e-mail (tela de verificação)
+    success('Conta criada!', 'Confirme seu e-mail para continuar.')
+    const falhou = res?.email_enviado === false ? '&falhou=1' : ''
+    await navigateTo(`/verificar-codigo?tipo=signup&email=${encodeURIComponent(form.email)}${falhou}`)
   } catch (err: any) {
     const status = err?.statusCode ?? err?.status ?? err?.response?.status
     const serverMsg: string = err?.statusMessage ?? err?.data?.statusMessage ?? err?.data?.message ?? ''
