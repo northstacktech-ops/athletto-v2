@@ -3,6 +3,7 @@
   "framework": "nuxtjs",
   "buildCommand": "nuxt build",
   "installCommand": "npm install",
+  "regions": ["gru1"],
   "crons": [
     { "path": "/api/cron/processar-notificacoes", "schedule": "0 12 * * *" },
     { "path": "/api/cron/gerar-mensalidades", "schedule": "0 12 1 * *" },

@@ -73,7 +73,7 @@ async function enviar() {
       password: senha.value,
     })
     if (error) throw error
-    await carregarPerfil()
+    await carregarPerfil(true)
     await navigateTo('/')
   } catch (e: any) {
     erro.value = e?.data?.statusMessage ?? e?.message ?? 'Não foi possível concluir o primeiro acesso.'

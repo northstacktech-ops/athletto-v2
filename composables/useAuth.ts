@@ -10,11 +10,30 @@ export function useAuth() {
   // Sinaliza que o usuário está autenticado mas ainda não criou seu gestor/clube
   // (estado esperado para usuário recém-cadastrado que precisa fazer onboarding).
   const perfilNaoEncontrado = useState<boolean>('auth_perfil_nao_encontrado', () => false)
+  // Id do usuário já carregado — evita refazer a query a cada chamada (layout,
+  // middleware de permissão, hidratação). `null` invalida o cache.
+  const perfilCarregadoDe = useState<string | null>('auth_perfil_de', () => null)
 
   const supabase = useSupabaseClient()
   const user = useSupabaseUser()
 
-  async function carregarPerfil() {
+  // Chamadas concorrentes (layout + middleware no mesmo tick) compartilham a
+  // mesma promise em vez de disparar duas queries idênticas.
+  let emVoo: Promise<void> | null = null
+
+  async function carregarPerfil(forcar = false) {
+    if (!user.value) return
+    if (!forcar && perfilCarregadoDe.value === user.value.id) return
+    if (emVoo) return emVoo
+    emVoo = carregarPerfilReal()
+    try {
+      await emVoo
+    } finally {
+      emVoo = null
+    }
+  }
+
+  async function carregarPerfilReal() {
     if (!user.value) return
     loading.value = true
     loadError.value = null
@@ -33,12 +52,14 @@ export function useAuth() {
         gestor.value = null
         clube.value = null
         perfilNaoEncontrado.value = true
+        perfilCarregadoDe.value = user.value.id
         loadError.value = null
         return
       }
 
       gestor.value = gestorData as Gestor
       clube.value = (gestorData as any).clubes as Clube
+      perfilCarregadoDe.value = user.value.id
       loadError.value = null
     } catch (err: any) {
       console.error('Erro ao carregar perfil:', err)
@@ -73,6 +94,7 @@ export function useAuth() {
     clube.value = null
     loadError.value = null
     perfilNaoEncontrado.value = false
+    perfilCarregadoDe.value = null
     await navigateTo('/login')
   }
 

@@ -300,17 +300,24 @@ async function carregar() {
     mesesSet.add(`${diaBase.value.getFullYear()}-${diaBase.value.getMonth() + 1}`)
   }
 
-  const [{ data: ts }, { data: ats }, ...evResults] = await Promise.all([
-    turmasComp.listar(),
-    atletasComp.listar(),
-    ...[...mesesSet].map((m) => {
+  // Turmas e atletas alimentam os seletores do formulário e não mudam ao
+  // navegar entre meses — só são buscados na primeira carga.
+  const precisaListas = !atletas.value.length
+
+  const [evResults, listas] = await Promise.all([
+    Promise.all([...mesesSet].map((m) => {
       const [a, me] = m.split('-').map(Number)
       return calComp.listarPorMes(a, me)
-    }),
+    })),
+    precisaListas
+      ? Promise.all([turmasComp.listar(), atletasComp.listar()])
+      : Promise.resolve(null),
   ])
 
-  turmas.value = ts ?? []
-  atletas.value = ats ?? []
+  if (listas) {
+    turmas.value = listas[0].data ?? []
+    atletas.value = listas[1].data ?? []
+  }
 
   const evsTodos: EventoCalendario[] = []
   for (const r of evResults) {

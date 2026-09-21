@@ -9,12 +9,10 @@ export function useCalendario() {
     return gestor.value?.clube_id ?? ''
   }
 
+  // Reaproveita o cache de useTurmas: esta função é chamada a cada mês/dia
+  // carregado e antes refazia a mesma query de turmas todas as vezes.
   async function turmasAtivas(): Promise<Turma[]> {
-    const { data } = await supabase
-      .from('turmas')
-      .select('*')
-      .eq('clube_id', getClubId())
-      .eq('ativo', true)
+    const { data } = await useTurmas().listar()
     return (data ?? []) as Turma[]
   }
 

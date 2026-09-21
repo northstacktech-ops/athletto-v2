@@ -202,7 +202,7 @@ async function onLogoRemove() {
       toast.error('Falha ao remover', error.message)
       return
     }
-    await carregarPerfil()
+    await carregarPerfil(true)
     form.logo_url = null
     original.value = { ...(clube.value ?? {}) } as Partial<Clube>
     toast.success('Logo removida')
@@ -226,7 +226,7 @@ async function salvar() {
     })
     if (error) throw error
     // Recarrega o perfil para sincronizar o clube reativo com os novos dados
-    await carregarPerfil()
+    await carregarPerfil(true)
     original.value = { ...(clube.value ?? {}) } as Partial<Clube>
     toast.success('Configurações salvas')
   } catch (err: any) {
