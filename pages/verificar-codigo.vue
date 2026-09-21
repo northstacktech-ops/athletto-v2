@@ -118,6 +118,7 @@ useHead({ title: 'Verificar código — Athletto' })
 const route = useRoute()
 const supabase = useSupabaseClient()
 const { success: toastSuccess, error: toastError } = useToast()
+const recuperacao = useCookie<string | null>('athletto_recovery', { maxAge: 3600, sameSite: 'lax', path: '/' })
 
 const email = computed(() => decodeURIComponent((route.query.email as string) ?? ''))
 // Atende dois fluxos: confirmação de cadastro (?tipo=signup) e recuperação de senha.
@@ -188,13 +189,18 @@ async function handleVerify() {
   errorMsg.value = ''
 
   try {
-    const { error } = await supabase.auth.verifyOtp({
+    const { data, error } = await supabase.auth.verifyOtp({
       email: email.value,
       token: otpValue.value,
       type: tipo,
     })
 
     if (error) throw error
+
+    // Recuperação: trava a navegação em /nova-senha até a senha ser trocada
+    if (tipo === 'recovery' && data.user?.id) {
+      recuperacao.value = data.user.id
+    }
 
     success.value = true
     toastSuccess('Verificado!', tipo === 'signup' ? 'E-mail confirmado com sucesso.' : 'Código confirmado com sucesso.')
