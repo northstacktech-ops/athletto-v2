@@ -17,4 +17,5 @@ jobs:
           node-version: 22
       - run: npm i -g vercel
       - run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+      - run: cat .vercel/project.json
       - run: vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
