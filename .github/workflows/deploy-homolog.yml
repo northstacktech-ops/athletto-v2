@@ -4,6 +4,12 @@ on:
     branches: [homolog]
   workflow_dispatch:
 
+# Dois pushes seguidos disparariam dois `vercel deploy --prod` ao mesmo tempo,
+# e o que terminasse por último venceria, mesmo sendo o commit mais antigo.
+concurrency:
+  group: deploy-homolog
+  cancel-in-progress: true
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
