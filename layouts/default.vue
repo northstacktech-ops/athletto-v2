@@ -83,7 +83,7 @@ onMounted(async () => {
 })
 
 async function retryPerfil() {
-  await carregarPerfil()
+  await carregarPerfil(true)
 }
 
 // ── Sidebar state ─────────────────────────────────────────────

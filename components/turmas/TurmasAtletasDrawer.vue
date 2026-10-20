@@ -181,20 +181,24 @@ function toggle(id: string) {
   vinculados.value = new Set(vinculados.value)
 }
 
+async function emLotes(ids: string[], fn: (id: string) => Promise<{ error: any }>) {
+  for (let i = 0; i < ids.length; i += 5) {
+    const resultados = await Promise.all(ids.slice(i, i + 5).map(fn))
+    const falha = resultados.find((r) => r.error)
+    if (falha) throw falha.error
+  }
+}
+
 async function salvar() {
   salvando.value = true
   try {
     const para_adicionar = [...vinculados.value].filter((id) => !vinculadosOriginais.value.has(id))
     const para_remover = [...vinculadosOriginais.value].filter((id) => !vinculados.value.has(id))
 
-    for (const id of para_adicionar) {
-      const { error } = await atletasComp.vincularTurma(id, props.turma.id)
-      if (error) throw error
-    }
-    for (const id of para_remover) {
-      const { error } = await atletasComp.desvincularTurma(id, props.turma.id)
-      if (error) throw error
-    }
+    // Lotes de 5: vincular gera cobrança + Pix num provedor externo, então
+    // disparar tudo de uma vez arriscaria o limite de requisições dele.
+    await emLotes(para_adicionar, (id) => atletasComp.vincularTurma(id, props.turma.id))
+    await emLotes(para_remover, (id) => atletasComp.desvincularTurma(id, props.turma.id))
 
     // Atualiza o baseline para refletir o estado salvo (permite salvar de novo)
     vinculadosOriginais.value = new Set(vinculados.value)

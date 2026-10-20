@@ -101,6 +101,41 @@ export function useFrequencia() {
     return { data, error }
   }
 
+  /**
+   * Resumo do dia para várias turmas de uma vez: quais já têm chamada
+   * registrada e quantos atletas ativos cada uma tem. Duas queries no total,
+   * em vez de duas por turma.
+   */
+  async function resumoDoDia(turma_ids: string[], data: string) {
+    if (!turma_ids.length) return { registradas: new Set<string>(), totais: {} as Record<string, number> }
+
+    const [{ data: regs }, { data: vinculos }] = await Promise.all([
+      supabase
+        .from('frequencias')
+        .select('turma_id')
+        .eq('clube_id', getClubId())
+        .in('turma_id', turma_ids)
+        .eq('data', data),
+      supabase
+        .from('atleta_turma')
+        .select('turma_id, atletas!inner(id)')
+        .in('turma_id', turma_ids)
+        .eq('ativo', true)
+        .neq('atletas.status', 'afastado')
+        .eq('atletas.ativo', true),
+    ])
+
+    const totais: Record<string, number> = {}
+    for (const v of vinculos ?? []) {
+      totais[(v as any).turma_id] = (totais[(v as any).turma_id] ?? 0) + 1
+    }
+
+    return {
+      registradas: new Set((regs ?? []).map((r: any) => r.turma_id)),
+      totais,
+    }
+  }
+
   async function listarAlertas(incluir_dispensados = false) {
     // Select enxuto (a UI usa nome/telefone do atleta e nome da turma) + limite —
     // antes trazia atletas(*) e turmas(*) inteiros, sem teto de linhas.
@@ -136,5 +171,5 @@ export function useFrequencia() {
     return { data, error }
   }
 
-  return { buscarPorTurmaData, historicoPorAtleta, historicoPorTurma, calcularPresenca, registrar, atletasDaTurma, listarAlertas, dispensarAlerta, ranking }
+  return { buscarPorTurmaData, historicoPorAtleta, historicoPorTurma, calcularPresenca, registrar, atletasDaTurma, resumoDoDia, listarAlertas, dispensarAlerta, ranking }
 }

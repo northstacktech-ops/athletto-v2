@@ -26,18 +26,6 @@ export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   devtools: { enabled: process.env.NODE_ENV !== 'production' },
 
-  /**
-   * Sem transição de página de propósito: com `out-in` a tela antiga precisava
-   * sumir (~150ms) ANTES do skeleton da nova aparecer, atrasando o feedback;
-   * sem `mode` as telas se sobrepõem e "pulam". Swap instantâneo = skeleton
-   * aparece no mesmo instante do clique. O feedback de navegação fica por conta
-   * da barra de progresso no topo (NuxtLoadingIndicator).
-   */
-  app: {
-    pageTransition: false,
-    layoutTransition: false,
-  },
-
   /** Sempre gere saída Build Output API da Vercel (evita preset `node-server` e 404 em produção). */
   nitro: {
     preset: 'vercel',
@@ -59,9 +47,9 @@ export default defineNuxtConfig({
     '@nuxtjs/tailwindcss',
     '@nuxtjs/supabase',
     '@nuxt/image',
-    // Sem SENTRY_DSN o módulo carrega mas fica inerte (sentry.client/server
-    // config.ts abaixo só chamam Sentry.init quando o DSN existe).
-    '@sentry/nuxt/module',
+    // Sem SENTRY_DSN o SDK ainda entraria no bundle do cliente sem ter o que
+    // reportar, então o módulo só é carregado quando há DSN configurado.
+    ...(process.env.SENTRY_DSN ? ['@sentry/nuxt/module'] : []),
   ],
 
   sentry: {
@@ -89,8 +77,10 @@ export default defineNuxtConfig({
   },
 
   tailwindcss: {
-    exposeConfig: true,
-    viewer: true,
+    // exposeConfig injetaria o config resolvido no bundle do cliente; nada no
+    // app importa `#tailwind-config`.
+    exposeConfig: false,
+    viewer: false,
     cssPath: '~/assets/css/main.css',
   },
 
@@ -116,7 +106,16 @@ export default defineNuxtConfig({
     },
   },
 
+  /**
+   * Sem transição de página de propósito: com `out-in` a tela antiga precisava
+   * sumir (~150ms) ANTES do skeleton da nova aparecer, atrasando o feedback;
+   * sem `mode` as telas se sobrepõem e "pulam". Swap instantâneo = skeleton
+   * aparece no mesmo instante do clique. O feedback de navegação fica por conta
+   * da barra de progresso no topo (NuxtLoadingIndicator).
+   */
   app: {
+    pageTransition: false,
+    layoutTransition: false,
     head: {
       title: 'Athletto v1.0 — Gestão Esportiva',
       meta: [

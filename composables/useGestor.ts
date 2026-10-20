@@ -43,14 +43,14 @@ export function useGestor() {
     if (updErr) return { url: null, error: updErr as unknown as Error }
 
     // Recarrega o perfil → avatar do topbar/UserMenu atualiza na hora.
-    await carregarPerfil()
+    await carregarPerfil(true)
     return { url, error: null }
   }
 
   async function removerFoto(): Promise<{ error: Error | null }> {
     const { error } = await atualizar({ foto_url: null })
     if (error) return { error: error as unknown as Error }
-    await carregarPerfil()
+    await carregarPerfil(true)
     return { error: null }
   }
 

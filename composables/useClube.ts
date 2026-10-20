@@ -46,7 +46,7 @@ export function useClube() {
 
     // Recarrega o perfil global para que topbar/sidebar/menus
     // reflitam a nova logo imediatamente.
-    await carregarPerfil()
+    await carregarPerfil(true)
     return { url, error: null }
   }
 

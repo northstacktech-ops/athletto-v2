@@ -5,8 +5,8 @@ import { rateLimited } from '~~/server/utils/appAtleta'
 /**
  * POST /api/auth/signup
  *
- * Cria a conta do gestor SEM confirmação de e-mail (sem SMTP configurado):
- * usa o admin API do Supabase com `email_confirm: true`.
+ * Cria a conta do gestor com e-mail NÃO confirmado e envia o código de 6
+ * dígitos (verifyOtp type 'signup'). O login só é liberado após a confirmação.
  *
  * Body: { email, password, nome, nome_clube, modalidade, plano }
  *
@@ -78,7 +78,7 @@ export default defineEventHandler(async (event) => {
   const { data, error } = await admin.auth.admin.createUser({
     email,
     password,
-    email_confirm: true, // sem SMTP — confirma o e-mail na criação
+    email_confirm: false, // o usuário confirma com o código de 6 dígitos enviado por e-mail
     user_metadata: {
       nome,
       nome_clube: nomeClube,
@@ -104,5 +104,17 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 500, statusMessage: 'Não foi possível criar sua conta. Tente novamente.' })
   }
 
-  return { ok: true, user_id: data.user?.id ?? null }
+  // O admin API cria o usuário mas não envia e-mail: dispara o código de
+  // confirmação pelo fluxo público (SMTP customizado do Supabase). Se falhar,
+  // a conta já existe — o usuário pede novo código na tela de verificação.
+  let emailEnviado = false
+  const anonKey = process.env.SUPABASE_KEY || process.env.NUXT_PUBLIC_SUPABASE_KEY || process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY
+  if (anonKey) {
+    const publico = createClient(supabaseUrl, anonKey, { auth: { persistSession: false } })
+    const { error: resendErr } = await publico.auth.resend({ type: 'signup', email })
+    if (resendErr) console.error('[signup] erro ao enviar código de confirmação:', resendErr)
+    else emailEnviado = true
+  }
+
+  return { ok: true, user_id: data.user?.id ?? null, email_enviado: emailEnviado }
 })

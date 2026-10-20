@@ -394,7 +394,7 @@
 
 <script setup lang="ts">
 import { formatDiasSemana, formatHorario, formatDate, formatCurrency } from '~/utils/format'
-import type { Turma, Atleta, Frequencia } from '~/types'
+import type { Turma, Atleta, Frequencia, Cobranca } from '~/types'
 
 definePageMeta({ layout: 'default' })
 
@@ -484,44 +484,53 @@ async function carregar() {
     const tRes = await turmasComp.buscarPorId(turmaId.value)
     turma.value = tRes.data
     if (turma.value) {
+      const tid = turma.value.id
       useHead({ title: `${turma.value.nome} — Athletto` })
 
-      const { data: planejamento } = await supabase
-        .from('planejamentos')
-        .select('id')
-        .eq('turma_id', turma.value.id)
-        .eq('status', 'ativo')
-        .maybeSingle()
-      if (planejamento) {
-        const { data: cx } = await supabase
-          .from('caixinhas')
-          .select('id')
-          .eq('planejamento_id', planejamento.id)
-          .maybeSingle()
-        caixinhaId.value = cx?.id ?? null
-      } else {
-        caixinhaId.value = null
-      }
+      // Três correntes independentes em paralelo: o que era uma fila de 6 idas
+      // ao banco vira 2 de profundidade.
+      const [caixinha, roster, fRes] = await Promise.all([
+        (async () => {
+          const { data: planejamento } = await supabase
+            .from('planejamentos')
+            .select('id')
+            .eq('turma_id', tid)
+            .eq('status', 'ativo')
+            .maybeSingle()
+          if (!planejamento) return null
+          const { data: cx } = await supabase
+            .from('caixinhas')
+            .select('id')
+            .eq('planejamento_id', planejamento.id)
+            .maybeSingle()
+          return cx?.id ?? null
+        })(),
+        (async () => {
+          // Usa atletasComp.listar (não freqComp.atletasDaTurma): essa aba mostra
+          // o roster completo da turma, incluindo afastados — atletasDaTurma é
+          // escopado pra "quem pode ter presença registrada" (exclui afastados/
+          // inativos), o que é certo pra Frequência mas errado aqui.
+          const atRes = await atletasComp.listar({ turma_id: tid })
+          const lista = (atRes.data ?? []) as Atleta[]
+          if (!lista.length) return { lista, cobr: [] as Cobranca[] }
+          const { data: cobr } = await finComp.listarCobranças({
+            status: 'pendente',
+            atleta_ids: lista.map((a) => a.id),
+          })
+          return { lista, cobr: cobr ?? [] }
+        })(),
+        freqComp.historicoPorTurma(tid),
+      ])
 
-      // Usa atletasComp.listar (não freqComp.atletasDaTurma): essa aba mostra
-      // o roster completo da turma, incluindo afastados — atletasDaTurma é
-      // escopado pra "quem pode ter presença registrada" (exclui afastados/
-      // inativos), o que é certo pra Frequência mas errado aqui.
-      const atRes = await atletasComp.listar({ turma_id: turma.value.id })
-      atletasDaTurma.value = (atRes.data ?? []) as Atleta[]
-
-      const fRes = await freqComp.historicoPorTurma(turma.value.id)
+      caixinhaId.value = caixinha
+      atletasDaTurma.value = roster.lista
       freqs.value = (fRes.data ?? []) as Frequencia[]
 
-      // Status de pagamento: cruza as cobranças pendentes do clube com os
-      // atletas da turma (atrasado se algum vencimento já passou).
+      // Status de pagamento: atrasado se algum vencimento já passou.
       const hojeStr = new Date().toISOString().slice(0, 10)
-      const idsTurma = new Set(atletasDaTurma.value.map((a) => a.id))
       const mapa: Record<string, 'em_dia' | 'pendente' | 'atrasado'> = {}
-      atletasDaTurma.value.forEach((a) => { mapa[a.id] = 'em_dia' })
-      const { data: cobr } = await finComp.listarCobranças({ status: 'pendente', limite: 1000 })
-      for (const c of (cobr ?? [])) {
-        if (!idsTurma.has(c.atleta_id)) continue
+      roster.lista.forEach((a) => { mapa[a.id] = 'em_dia' })
+      for (const c of roster.cobr) {
         const atrasada = c.data_vencimento < hojeStr
         if (atrasada) mapa[c.atleta_id] = 'atrasado'
         else if (mapa[c.atleta_id] !== 'atrasado') mapa[c.atleta_id] = 'pendente'

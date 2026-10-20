@@ -246,20 +246,13 @@ async function carregarPendencias() {
   const diaHoje = new Date().getDay()
   const candidatas = props.turmas.filter((t) => (t.dias_semana ?? []).includes(diaHoje))
 
-  turmasHoje.value = await Promise.all(
-    candidatas.map(async (turma) => {
-      const [{ data: regs }, { data: as }] = await Promise.all([
-        freqComp.buscarPorTurmaData(turma.id, hoje),
-        freqComp.atletasDaTurma(turma.id),
-      ])
-      const atletasList = (as ?? []).map((x: any) => (x.atletas ? x.atletas : x))
-      return {
-        turma,
-        registrada: (regs ?? []).length > 0,
-        totalAtletas: atletasList.length,
-      }
-    }),
-  )
+  const { registradas, totais } = await freqComp.resumoDoDia(candidatas.map((t) => t.id), hoje)
+
+  turmasHoje.value = candidatas.map((turma) => ({
+    turma,
+    registrada: registradas.has(turma.id),
+    totalAtletas: totais[turma.id] ?? 0,
+  }))
   pendenciasLoading.value = false
   // Sem auto-seleção: a tela sempre mostra a lista do dia. O gestor clica no
   // treino que quer registrar (evita o "voltar" sem efeito quando há 1 turma).

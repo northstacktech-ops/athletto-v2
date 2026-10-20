@@ -198,7 +198,11 @@ async function handleLogin() {
       errorMsg.value = 'E-mail ou senha incorretos. Verifique e tente novamente.'
     }
     else if (msg.includes('Email not confirmed')) {
-      errorMsg.value = 'Confirme seu e-mail antes de entrar. Verifique sua caixa de entrada.'
+      // Cadastro sem confirmação: reenvia o código e leva para a tela de verificação.
+      // Se o reenvio esbarrar no limite do Supabase, o código anterior segue válido.
+      await supabase.auth.resend({ type: 'signup', email: form.email }).catch(() => {})
+      await navigateTo(`/verificar-codigo?tipo=signup&email=${encodeURIComponent(form.email)}`)
+      return
     }
     else {
       errorMsg.value = 'Não foi possível realizar o login. Tente novamente.'

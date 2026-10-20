@@ -208,6 +208,7 @@ export function useFinanceiro() {
     caixinha_id?: string
     status?: string
     atleta_id?: string
+    atleta_ids?: string[]
     limite?: number
     offset?: number
   }) {
@@ -219,6 +220,7 @@ export function useFinanceiro() {
     if (filtros?.caixinha_id) query = query.eq('caixinha_id', filtros.caixinha_id)
     if (filtros?.status) query = query.eq('status', filtros.status)
     if (filtros?.atleta_id) query = query.eq('atleta_id', filtros.atleta_id)
+    if (filtros?.atleta_ids) query = query.in('atleta_id', filtros.atleta_ids)
 
     query = query.order('data_vencimento')
     if (filtros?.limite != null) {

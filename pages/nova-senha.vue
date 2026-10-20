@@ -9,15 +9,9 @@
         </svg>
       </div>
       <h2 class="text-xl font-extrabold text-gray-900 mb-2">Senha atualizada!</h2>
-      <p class="text-sm text-gray-500 mb-6">
-        Sua senha foi redefinida com sucesso. Use-a no próximo acesso.
+      <p class="text-sm text-gray-500">
+        Sua senha foi redefinida com sucesso. Redirecionando...
       </p>
-      <NuxtLink to="/login" class="btn-primary inline-flex w-full">
-        Ir para o login
-        <svg class="w-4 h-4 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-        </svg>
-      </NuxtLink>
     </div>
 
     <!-- Form -->
@@ -145,6 +139,12 @@
           </button>
         </div>
       </form>
+
+      <div class="mt-5 text-center">
+        <button type="button" class="text-sm font-semibold text-gray-500 hover:text-gray-700" :disabled="loading" @click="cancelar">
+          Cancelar e voltar ao login
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -155,6 +155,7 @@ useHead({ title: 'Nova senha — Athletto' })
 
 const supabase = useSupabaseClient()
 const { success: toastSuccess } = useToast()
+const recuperacao = useCookie<string | null>('athletto_recovery', { maxAge: 3600, sameSite: 'lax', path: '/' })
 
 const form = reactive({ nova: '', confirmar: '' })
 const errors = reactive({ nova: '', confirmar: '' })
@@ -191,6 +192,12 @@ function validateConfirmar() {
   errors.confirmar = form.confirmar !== form.nova ? 'As senhas não coincidem.' : ''
 }
 
+async function cancelar() {
+  recuperacao.value = null
+  await supabase.auth.signOut()
+  await navigateTo('/login')
+}
+
 async function handleSubmit() {
   validateNova()
   validateConfirmar()
@@ -200,11 +207,20 @@ async function handleSubmit() {
   errorMsg.value = ''
 
   try {
-    const { error } = await supabase.auth.updateUser({ password: form.nova })
+    const { data, error } = await supabase.auth.updateUser({ password: form.nova })
     if (error) throw error
 
+    recuperacao.value = null
     toastSuccess('Senha atualizada!', 'Sua nova senha foi salva com sucesso.')
     done.value = true
+
+    // Mesmo critério do login: com clube vai pro painel, sem clube vai pro onboarding
+    let destino = '/'
+    if (data.user?.id) {
+      const { data: g } = await supabase.from('gestores').select('id').eq('id', data.user.id).maybeSingle()
+      destino = g ? '/' : '/onboarding'
+    }
+    setTimeout(() => navigateTo(destino), 1200)
   } catch (err: any) {
     const msg: string = err?.message ?? ''
     if (msg.includes('same password')) {

@@ -118,11 +118,12 @@ useHead({ title: 'Verificar código — Athletto' })
 const route = useRoute()
 const supabase = useSupabaseClient()
 const { success: toastSuccess, error: toastError } = useToast()
+const recuperacao = useCookie<string | null>('athletto_recovery', { maxAge: 3600, sameSite: 'lax', path: '/' })
 
 const email = computed(() => decodeURIComponent((route.query.email as string) ?? ''))
-// Esta página atende apenas o fluxo de recuperação de senha (o cadastro
-// não exige mais confirmação de e-mail).
-const tipoLabel = 'Redefinir senha'
+// Atende dois fluxos: confirmação de cadastro (?tipo=signup) e recuperação de senha.
+const tipo = route.query.tipo === 'signup' ? 'signup' : 'recovery'
+const tipoLabel = tipo === 'signup' ? 'Confirme seu e-mail' : 'Redefinir senha'
 
 const otpDigits = ref<string[]>(Array(6).fill(''))
 const otpRefs = ref<HTMLInputElement[]>([])
@@ -188,20 +189,25 @@ async function handleVerify() {
   errorMsg.value = ''
 
   try {
-    const { error } = await supabase.auth.verifyOtp({
+    const { data, error } = await supabase.auth.verifyOtp({
       email: email.value,
       token: otpValue.value,
-      type: 'recovery',
+      type: tipo,
     })
 
     if (error) throw error
 
+    // Recuperação: trava a navegação em /nova-senha até a senha ser trocada
+    if (tipo === 'recovery' && data.user?.id) {
+      recuperacao.value = data.user.id
+    }
+
     success.value = true
-    toastSuccess('Verificado!', 'Código confirmado com sucesso.')
+    toastSuccess('Verificado!', tipo === 'signup' ? 'E-mail confirmado com sucesso.' : 'Código confirmado com sucesso.')
 
     await nextTick()
     setTimeout(async () => {
-      await navigateTo('/nova-senha')
+      await navigateTo(tipo === 'signup' ? '/onboarding' : '/nova-senha')
     }, 1200)
   } catch (err: any) {
     const msg: string = err?.message ?? ''
@@ -224,9 +230,11 @@ async function handleResend() {
   loading.value = true
   errorMsg.value = ''
   try {
-    const { error } = await supabase.auth.resetPasswordForEmail(email.value, {
-      redirectTo: `${window.location.origin}/nova-senha`,
-    })
+    const { error } = tipo === 'signup'
+      ? await supabase.auth.resend({ type: 'signup', email: email.value })
+      : await supabase.auth.resetPasswordForEmail(email.value, {
+          redirectTo: `${window.location.origin}/nova-senha`,
+        })
     if (error) throw error
 
     startCooldown()
@@ -258,8 +266,15 @@ async function handleResend() {
   }
 }
 
-// Focar primeiro campo ao montar (cooldown só começa após reenvio manual)
+// Focar primeiro campo ao montar. No cadastro o código acabou de ser enviado,
+// então o cooldown já começa (evita estourar o limite de envios do Supabase).
 onMounted(() => {
+  if (tipo === 'signup') {
+    startCooldown()
+    if (route.query.falhou === '1') {
+      errorMsg.value = 'Sua conta foi criada, mas não conseguimos enviar o código. Aguarde o contador e clique em "Reenviar código".'
+    }
+  }
   nextTick(() => otpRefs.value[0]?.focus())
 })
 </script>

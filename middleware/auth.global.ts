@@ -9,7 +9,9 @@ const INFO_ROUTES = ['/privacidade', '/termos', '/suporte']
 // usuários JÁ autenticados — não pode redirecionar de volta pra "/", ou forma
 // loop infinito com plano.global.ts (que manda pra cá exatamente por causa do
 // usuário estar logado). Mesmo motivo do /onboarding ficar de fora da regra.
-const ROTAS_LOGADO_PERMITIDAS = ['/onboarding', '/upgrade', ...INFO_ROUTES]
+// /nova-senha: o código de recuperação já cria a sessão, e a pessoa precisa
+// chegar nessa tela logada para definir a nova senha.
+const ROTAS_LOGADO_PERMITIDAS = ['/onboarding', '/upgrade', '/nova-senha', ...INFO_ROUTES]
 
 function isPublic(path: string): boolean {
   if (PUBLIC_ROUTES.includes(path)) return true
@@ -21,6 +23,14 @@ export default defineNuxtRouteMiddleware((to) => {
 
   if (!user.value && !isPublic(to.path)) {
     return navigateTo('/login')
+  }
+
+  // Recuperação de senha: quem validou o código está logado, mas só sai da tela
+  // de nova senha depois de salvá-la. O cookie guarda o id do usuário para não
+  // travar outra conta que logue depois com um cookie antigo.
+  const recuperacao = useCookie<string | null>('athletto_recovery')
+  if (user.value && recuperacao.value && recuperacao.value === user.value.id && to.path !== '/nova-senha') {
+    return navigateTo('/nova-senha')
   }
 
   // Usuários logados não devem ficar parados nas páginas de auth — exceto
