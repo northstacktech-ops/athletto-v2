@@ -1,0 +1,50 @@
+name: Protege crons do vercel.json
+
+# A branch homolog roda num projeto Vercel de plano Hobby, que recusa qualquer
+# cron mais frequente que diario. Por isso o vercel.json de la nao tem o bloco
+# `crons`. Se esse arquivo chegar na main, as quatro rotinas de producao param
+# de existir em silencio: o build passa, o deploy sobe verde, e ninguem percebe
+# ate as mensalidades nao serem geradas no dia 1o.
+#
+# Marque este check como obrigatorio em Settings > Branches para a main.
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Garante que os 4 crons de producao existem
+        run: |
+          set -euo pipefail
+
+          if [ ! -f vercel.json ]; then
+            echo "::error file=vercel.json::vercel.json nao existe. Producao depende dele."
+            exit 1
+          fi
+
+          esperados=(
+            "/api/cron/processar-notificacoes"
+            "/api/cron/gerar-mensalidades"
+            "/api/cron/regua-cobranca"
+            "/api/cron/reconciliar-cobrancas"
+          )
+
+          faltando=0
+          for path in "${esperados[@]}"; do
+            if ! jq -e --arg p "$path" '.crons // [] | any(.path == $p)' vercel.json > /dev/null; then
+              echo "::error file=vercel.json::Cron ausente: $path"
+              faltando=1
+            fi
+          done
+
+          if [ "$faltando" -eq 1 ]; then
+            echo "::error file=vercel.json::vercel.json sem os crons de producao. Isso costuma ser merge da branch homolog na main. Veja .github/workflows/protege-crons.yml."
+            exit 1
+          fi
+
+          echo "Os 4 crons de producao estao presentes."
